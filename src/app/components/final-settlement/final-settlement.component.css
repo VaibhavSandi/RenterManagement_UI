@@ -1,0 +1,136 @@
+/* Settlement Card */
+.settlement-card {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.settlement-card .card-header {
+  padding: 1rem 1.5rem;
+}
+
+/* Formula Bar */
+.formula-bar {
+  background: #f0f5ff;
+  border: 1px dashed #93b4f5;
+}
+
+/* Refund Highlight */
+.refund-highlight {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #fff;
+}
+
+.refund-highlight .refund-amount {
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.refund-highlight .bi-wallet2 {
+  opacity: 0.8;
+}
+
+/* Form Controls */
+.form-label {
+  font-size: 0.875rem;
+  margin-bottom: 0.35rem;
+  color: #374151;
+}
+
+.form-select,
+.form-control {
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  border-color: #d1d5db;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-select:focus,
+.form-control:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Table */
+.table th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.table td {
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+/* Button */
+.btn-primary {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.btn-primary:disabled {
+  background-color: #93c5fd;
+  border-color: #93c5fd;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Card general */
+.card {
+  border: none;
+  border-radius: 12px;
+}
+
+.card-header {
+  border-radius: 12px 12px 0 0 !important;
+}
+
+/* Alert */
+.alert-success {
+  border-radius: 10px;
+  border: none;
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+/* Badge */
+.badge.bg-success {
+  font-size: 0.85rem;
+  padding: 0.4em 0.75em;
+}
+
+.badge.bg-danger {
+  font-size: 0.85rem;
+  padding: 0.4em 0.75em;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .formula-bar .row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .formula-bar .col-auto {
+    display: none;
+  }
+
+  .refund-highlight .refund-amount {
+    font-size: 1.75rem;
+  }
+}

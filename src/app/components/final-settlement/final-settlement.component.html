@@ -1,0 +1,194 @@
+<div class="container-fluid py-4">
+  <!-- Page Title -->
+  <div class="d-flex align-items-center mb-4">
+    <i class="bi bi-receipt-cutoff fs-3 text-primary me-2"></i>
+    <h2 class="mb-0 fw-bold">Final Settlement</h2>
+  </div>
+
+  <!-- Success Alert -->
+  <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" *ngIf="showSuccess" role="alert">
+    <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+    <strong>Settlement processed successfully!</strong> The renter has been marked as left and deposit refund recorded.
+    <button type="button" class="btn-close" (click)="showSuccess = false"></button>
+  </div>
+
+  <!-- Settlement Form Card -->
+  <div class="card settlement-card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>Settlement Calculator</h5>
+    </div>
+    <div class="card-body p-4">
+      <form #settlementForm="ngForm" (ngSubmit)="submitSettlement()">
+        <div class="row g-3">
+          <!-- Select Renter -->
+          <div class="col-md-6">
+            <label for="renter" class="form-label fw-semibold">
+              <i class="bi bi-person me-1"></i>Select Renter
+            </label>
+            <select class="form-select" id="renter" name="renterId"
+                    [(ngModel)]="settlement.renterId"
+                    (ngModelChange)="onRenterChange()" required>
+              <option [value]="0" disabled>-- Choose a Renter --</option>
+              <option *ngFor="let renter of activeRenters" [value]="renter.id">
+                {{ renter.renterName }} ({{ renter.flatNo }})
+              </option>
+            </select>
+          </div>
+
+          <!-- Leaving Date -->
+          <div class="col-md-6">
+            <label for="leavingDate" class="form-label fw-semibold">
+              <i class="bi bi-calendar-event me-1"></i>Leaving Date
+            </label>
+            <input type="date" class="form-control" id="leavingDate" name="leavingDate"
+                   [(ngModel)]="settlement.leavingDate" required />
+          </div>
+
+          <!-- Deposit Amount (readonly) -->
+          <div class="col-md-6">
+            <label for="depositAmount" class="form-label fw-semibold">
+              <i class="bi bi-safe me-1"></i>Deposit Amount (₹)
+            </label>
+            <input type="number" class="form-control bg-light" id="depositAmount" name="depositAmount"
+                   [(ngModel)]="settlement.depositAmount" readonly />
+          </div>
+
+          <!-- Pending Rent -->
+          <div class="col-md-6">
+            <label for="pendingRent" class="form-label fw-semibold">
+              <i class="bi bi-exclamation-circle me-1"></i>Pending Rent (₹)
+            </label>
+            <input type="number" class="form-control" id="pendingRent" name="pendingRent"
+                   [(ngModel)]="settlement.pendingRent"
+                   (ngModelChange)="calculateRefund()" min="0" required />
+          </div>
+
+          <!-- Deduction Amount -->
+          <div class="col-md-6">
+            <label for="deductionAmount" class="form-label fw-semibold">
+              <i class="bi bi-dash-circle me-1"></i>Deduction Amount (₹)
+            </label>
+            <input type="number" class="form-control" id="deductionAmount" name="deductionAmount"
+                   [(ngModel)]="settlement.deductionAmount"
+                   (ngModelChange)="calculateRefund()" min="0" required />
+          </div>
+
+          <!-- Deduction Reason -->
+          <div class="col-md-6">
+            <label for="deductionReason" class="form-label fw-semibold">
+              <i class="bi bi-chat-left-text me-1"></i>Deduction Reason
+            </label>
+            <input type="text" class="form-control" id="deductionReason" name="deductionReason"
+                   [(ngModel)]="settlement.deductionReason"
+                   placeholder="e.g., Wall damage, cleaning charges" />
+          </div>
+        </div>
+
+        <!-- Formula Display -->
+        <div class="formula-bar mt-4 p-3 rounded-3">
+          <div class="row text-center align-items-center">
+            <div class="col">
+              <small class="text-muted d-block">Deposit</small>
+              <span class="fw-bold text-primary">₹{{ settlement.depositAmount | number }}</span>
+            </div>
+            <div class="col-auto">
+              <span class="fs-4 text-muted">−</span>
+            </div>
+            <div class="col">
+              <small class="text-muted d-block">Pending Rent</small>
+              <span class="fw-bold text-danger">₹{{ settlement.pendingRent | number }}</span>
+            </div>
+            <div class="col-auto">
+              <span class="fs-4 text-muted">−</span>
+            </div>
+            <div class="col">
+              <small class="text-muted d-block">Deduction</small>
+              <span class="fw-bold text-warning">₹{{ settlement.deductionAmount | number }}</span>
+            </div>
+            <div class="col-auto">
+              <span class="fs-4 text-muted">=</span>
+            </div>
+            <div class="col">
+              <small class="text-muted d-block">Final Refund</small>
+              <span class="fw-bold fs-5" [ngClass]="settlement.finalRefundAmount >= 0 ? 'text-success' : 'text-danger'">
+                ₹{{ settlement.finalRefundAmount | number }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Final Refund Highlight Box -->
+        <div class="refund-highlight mt-4 p-4 rounded-3 text-center">
+          <div class="d-flex align-items-center justify-content-center">
+            <i class="bi bi-wallet2 fs-2 me-3"></i>
+            <div>
+              <small class="d-block text-uppercase fw-semibold opacity-75">Final Refund Amount</small>
+              <span class="refund-amount">₹{{ settlement.finalRefundAmount | number }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-end mt-4">
+          <button type="submit" class="btn btn-primary btn-lg px-5"
+                  [disabled]="!settlementForm.valid || settlement.renterId === 0 || !settlement.leavingDate">
+            <i class="bi bi-check2-circle me-2"></i>Submit Settlement
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Past Settlements Table -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-white border-bottom">
+      <h5 class="mb-0 fw-bold">
+        <i class="bi bi-clock-history me-2 text-secondary"></i>Past Settlements
+      </h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Renter Name</th>
+              <th>Flat No</th>
+              <th>Leaving Date</th>
+              <th>Deposit (₹)</th>
+              <th>Pending Rent (₹)</th>
+              <th>Deduction (₹)</th>
+              <th>Reason</th>
+              <th>Refund (₹)</th>
+              <th>Settlement Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of settlements; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td class="fw-semibold">{{ s.renterName }}</td>
+              <td><span class="badge bg-secondary">{{ s.flatNo }}</span></td>
+              <td>{{ s.leavingDate }}</td>
+              <td>{{ s.depositAmount | number }}</td>
+              <td class="text-danger">{{ s.pendingRent | number }}</td>
+              <td class="text-warning">{{ s.deductionAmount | number }}</td>
+              <td>{{ s.deductionReason || '—' }}</td>
+              <td>
+                <span class="badge rounded-pill" [ngClass]="s.finalRefundAmount >= 0 ? 'bg-success' : 'bg-danger'">
+                  ₹{{ s.finalRefundAmount | number }}
+                </span>
+              </td>
+              <td>{{ s.settlementDate }}</td>
+            </tr>
+            <tr *ngIf="settlements.length === 0">
+              <td colspan="10" class="text-center text-muted py-4">
+                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                No settlements found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

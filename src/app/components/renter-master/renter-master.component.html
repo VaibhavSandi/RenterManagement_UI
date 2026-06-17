@@ -1,0 +1,218 @@
+<div class="container-fluid py-4">
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title mb-0">
+      <i class="bi bi-people-fill me-2"></i>Renter Master
+    </h2>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <i class="bi bi-plus-circle me-1"></i> Add Renter
+    </button>
+  </div>
+
+  <!-- Renter Table -->
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Mobile</th>
+              <th>Flat No</th>
+              <th>Building</th>
+              <th>Monthly Rent</th>
+              <th>Deposit</th>
+              <th>Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let renter of renters; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td class="fw-semibold">{{ renter.renterName }}</td>
+              <td>{{ renter.mobileNumber }}</td>
+              <td>{{ renter.flatNo }}</td>
+              <td>{{ renter.buildingName }}</td>
+              <td>₹{{ renter.monthlyRent | number }}</td>
+              <td>₹{{ renter.depositPaid | number }}</td>
+              <td>
+                <span class="badge"
+                  [ngClass]="renter.status === 'Active' ? 'bg-success' : 'bg-danger'">
+                  {{ renter.status }}
+                </span>
+              </td>
+              <td class="text-center">
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-info" title="View"
+                    (click)="openViewModal(renter)">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button class="btn btn-outline-primary" title="Edit"
+                    (click)="openEditModal(renter)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-outline-danger" title="Delete"
+                    (click)="deleteRenter(renter.id)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="renters.length === 0">
+              <td colspan="9" class="text-center text-muted py-4">
+                No renters found. Click "Add Renter" to get started.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ Add / Edit Modal ═══════════ -->
+<div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
+<div class="modal-dialog-container" *ngIf="showModal">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="bi" [ngClass]="isEditing ? 'bi-pencil-square' : 'bi-person-plus'"></i>
+        {{ isEditing ? 'Edit Renter' : 'Add New Renter' }}
+      </h5>
+      <button type="button" class="btn-close" (click)="closeModal()"></button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="saveRenter()">
+        <div class="row g-3">
+          <!-- Renter Name -->
+          <div class="col-md-6">
+            <label class="form-label">Renter Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="currentRenter.renterName"
+              name="renterName" required placeholder="Enter full name">
+          </div>
+          <!-- Mobile Number -->
+          <div class="col-md-6">
+            <label class="form-label">Mobile Number <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="currentRenter.mobileNumber"
+              name="mobileNumber" required placeholder="10-digit mobile">
+          </div>
+          <!-- Flat No -->
+          <div class="col-md-6">
+            <label class="form-label">Flat No <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="currentRenter.flatId"
+              name="flatId" required (ngModelChange)="onFlatChange()">
+              <option [ngValue]="0" disabled>-- Select Flat --</option>
+              <option *ngFor="let flat of flats" [ngValue]="flat.id">
+                {{ flat.flatNo }} - {{ flat.buildingName }}
+              </option>
+            </select>
+          </div>
+          <!-- Joining Date -->
+          <div class="col-md-6">
+            <label class="form-label">Joining Date <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" [(ngModel)]="currentRenter.joiningDate"
+              name="joiningDate" required>
+          </div>
+          <!-- Monthly Rent -->
+          <div class="col-md-6">
+            <label class="form-label">Monthly Rent (₹)</label>
+            <input type="number" class="form-control" [(ngModel)]="currentRenter.monthlyRent"
+              name="monthlyRent" placeholder="Auto-filled from flat">
+          </div>
+          <!-- Deposit Paid -->
+          <div class="col-md-6">
+            <label class="form-label">Deposit Paid (₹)</label>
+            <input type="number" class="form-control" [(ngModel)]="currentRenter.depositPaid"
+              name="depositPaid" placeholder="Enter deposit amount">
+          </div>
+          <!-- ID Proof No -->
+          <div class="col-md-6">
+            <label class="form-label">ID Proof No</label>
+            <input type="text" class="form-control" [(ngModel)]="currentRenter.idProofNo"
+              name="idProofNo" placeholder="Aadhaar / PAN / DL">
+          </div>
+          <!-- Status -->
+          <div class="col-md-6">
+            <label class="form-label">Status</label>
+            <select class="form-select" [(ngModel)]="currentRenter.status" name="status">
+              <option value="Active">Active</option>
+              <option value="Left">Left</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi" [ngClass]="isEditing ? 'bi-check-lg' : 'bi-plus-lg'"></i>
+            {{ isEditing ? 'Update' : 'Save' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ View Detail Modal ═══════════ -->
+<div class="modal-backdrop" *ngIf="showViewModal" (click)="closeModal()"></div>
+<div class="modal-dialog-container" *ngIf="showViewModal && viewRenter">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="bi bi-person-badge me-2"></i>Renter Details
+      </h5>
+      <button type="button" class="btn-close" (click)="closeModal()"></button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-card">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="detail-label">Renter Name</div>
+            <div class="detail-value">{{ viewRenter.renterName }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="detail-label">Mobile Number</div>
+            <div class="detail-value">{{ viewRenter.mobileNumber }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="detail-label">Flat No</div>
+            <div class="detail-value">{{ viewRenter.flatNo }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="detail-label">Building</div>
+            <div class="detail-value">{{ viewRenter.buildingName }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="detail-label">Joining Date</div>
+            <div class="detail-value">{{ viewRenter.joiningDate }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="detail-label">Monthly Rent</div>
+            <div class="detail-value fw-semibold text-primary">₹{{ viewRenter.monthlyRent | number }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="detail-label">Deposit Paid</div>
+            <div class="detail-value">₹{{ viewRenter.depositPaid | number }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="detail-label">ID Proof No</div>
+            <div class="detail-value">{{ viewRenter.idProofNo }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="detail-label">Status</div>
+            <div class="detail-value">
+              <span class="badge"
+                [ngClass]="viewRenter.status === 'Active' ? 'bg-success' : 'bg-danger'">
+                {{ viewRenter.status }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end mt-3">
+        <button class="btn btn-secondary" (click)="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

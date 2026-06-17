@@ -1,0 +1,41 @@
+<div class="container-fluid py-4">
+  <!-- Page Title -->
+  <div class="d-flex align-items-center mb-4">
+    <i class="bi bi-bar-chart-line fs-3 text-primary me-2"></i>
+    <h2 class="mb-0 fw-bold">Reports</h2>
+  </div>
+
+  <!-- Success Alert -->
+  <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" *ngIf="showAlert" role="alert">
+    <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+    <strong>{{ alertMessage }}</strong>
+    <button type="button" class="btn-close" (click)="showAlert = false"></button>
+  </div>
+
+  <!-- Report Cards Grid -->
+  <div class="row g-4">
+    <div class="col-12 col-md-6 col-lg-4" *ngFor="let report of reports">
+      <div class="card report-card h-100 shadow-sm" (click)="generateReport(report)">
+        <div class="card-body text-center p-4">
+          <!-- Icon Circle -->
+          <div class="icon-circle mx-auto mb-3" [style.background]="report.color + '15'" [style.color]="report.color">
+            <i class="bi {{ report.icon }}"></i>
+          </div>
+
+          <!-- Title -->
+          <h5 class="card-title fw-bold mb-2">{{ report.title }}</h5>
+
+          <!-- Description -->
+          <p class="card-text text-muted mb-3">{{ report.description }}</p>
+
+          <!-- Action Button -->
+          <button class="btn action-btn" [style.background]="report.color" [style.border-color]="report.color"
+                  (click)="generateReport(report); $event.stopPropagation()">
+            <i class="bi me-1" [ngClass]="report.action === 'Export' ? 'bi-download' : 'bi-play-fill'"></i>
+            {{ report.action }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

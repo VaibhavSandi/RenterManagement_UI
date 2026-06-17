@@ -1,0 +1,119 @@
+/* Search Dropdown */
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-top: none;
+  border-radius: 0 0 0.5rem 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.search-dropdown-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.15s ease;
+}
+
+.search-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.search-dropdown-item:hover {
+  background-color: #f0f4ff;
+}
+
+/* Detail Items */
+.detail-item {
+  padding: 0.5rem 0;
+}
+
+.detail-label {
+  font-size: 0.78rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.detail-value {
+  font-size: 1rem;
+  color: #212529;
+  font-weight: 500;
+}
+
+/* Summary Cards */
+.summary-card {
+  border-left: 4px solid transparent !important;
+  transition: transform 0.15s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+}
+
+.summary-green {
+  border-left-color: #198754 !important;
+}
+
+.summary-blue {
+  border-left-color: #2563eb !important;
+}
+
+/* Table */
+.table th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6c757d;
+  font-weight: 600;
+  border-bottom-width: 1px;
+}
+
+.table td {
+  vertical-align: middle;
+  font-size: 0.93rem;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 3rem 1rem;
+}
+
+.empty-state i {
+  opacity: 0.4;
+}
+
+/* Card Header */
+.card-header {
+  font-weight: 500;
+}
+
+/* Input focus */
+.form-control:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
+}
+
+.input-group-text {
+  border-color: #dee2e6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .detail-value {
+    font-size: 0.9rem;
+  }
+
+  .summary-card .card-body h3 {
+    font-size: 1.3rem;
+  }
+}

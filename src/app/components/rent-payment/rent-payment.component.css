@@ -1,0 +1,133 @@
+/* ── Page ── */
+.page-title {
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 1.6rem;
+}
+
+/* ── Cards ── */
+.card {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card-header {
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 24px;
+}
+
+.card-header-title {
+  font-weight: 700;
+  color: #2563eb;
+  font-size: 1.05rem;
+}
+
+.card-body {
+  padding: 24px;
+}
+
+/* ── Form ── */
+.form-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.form-control,
+.form-select {
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+textarea.form-control {
+  resize: vertical;
+}
+
+/* ── Table ── */
+.table thead {
+  background-color: #2563eb;
+  color: #fff;
+}
+
+.table thead th {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 12px 16px;
+  white-space: nowrap;
+  border: none;
+}
+
+.table tbody td {
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+.table tbody tr:hover {
+  background-color: #f0f6ff;
+}
+
+.badge {
+  font-size: 0.78rem;
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+/* ── Success Alert ── */
+.alert-success {
+  border-radius: 10px;
+  border: none;
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+/* ── Buttons ── */
+.btn-primary {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.btn-lg {
+  padding: 10px 28px;
+  font-size: 1rem;
+  border-radius: 10px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.25rem;
+  }
+
+  .card-body {
+    padding: 16px;
+  }
+
+  .table thead th,
+  .table tbody td {
+    padding: 8px 10px;
+    font-size: 0.82rem;
+  }
+
+  .btn-lg {
+    width: 100%;
+  }
+}

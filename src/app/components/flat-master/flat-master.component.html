@@ -1,0 +1,149 @@
+<div class="flat-master-container">
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h2 class="page-title mb-0">
+      <i class="bi bi-building me-2"></i>Flat Master
+    </h2>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <i class="bi bi-plus-lg me-1"></i>Add Flat
+    </button>
+  </div>
+
+  <!-- Flat Count Info -->
+  <div class="d-flex gap-3 mb-3">
+    <span class="badge bg-primary-subtle text-primary px-3 py-2">
+      <i class="bi bi-building me-1"></i>Total: {{ flats.length }}
+    </span>
+    <span class="badge bg-success-subtle text-success px-3 py-2">
+      <i class="bi bi-house-check me-1"></i>Occupied: {{ occupiedCount }}
+    </span>
+    <span class="badge bg-warning-subtle text-warning px-3 py-2">
+      <i class="bi bi-house me-1"></i>Vacant: {{ vacantCount }}
+    </span>
+  </div>
+
+  <!-- Flats Table -->
+  <div class="card table-card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Flat No</th>
+              <th>Building Name</th>
+              <th>Monthly Rent</th>
+              <th>Deposit</th>
+              <th>Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let flat of flats; let i = index">
+              <td class="text-muted">{{ i + 1 }}</td>
+              <td class="fw-semibold">{{ flat.flatNo }}</td>
+              <td>{{ flat.buildingName }}</td>
+              <td class="fw-medium">{{ formatCurrency(flat.monthlyRent) }}</td>
+              <td>{{ formatCurrency(flat.depositAmount) }}</td>
+              <td>
+                <span class="badge rounded-pill"
+                  [ngClass]="{
+                    'status-occupied': flat.status === 'Occupied',
+                    'status-vacant': flat.status === 'Vacant'
+                  }">
+                  <i class="bi me-1" [ngClass]="{
+                    'bi-check-circle-fill': flat.status === 'Occupied',
+                    'bi-dash-circle': flat.status === 'Vacant'
+                  }"></i>
+                  {{ flat.status }}
+                </span>
+              </td>
+              <td class="text-center">
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-primary" (click)="openEditModal(flat)" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-outline-danger" (click)="deleteFlat(flat.id)" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="flats.length === 0">
+              <td colspan="7" class="text-center text-muted py-5">
+                <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                No flats found. Add your first flat!
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-backdrop-custom" *ngIf="showModal" (click)="closeModal()"></div>
+<div class="modal d-block" tabindex="-1" *ngIf="showModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi me-2" [ngClass]="isEditing ? 'bi-pencil-square' : 'bi-plus-circle'"></i>
+          {{ isEditing ? 'Edit Flat' : 'Add New Flat' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeModal()"></button>
+      </div>
+      <form (ngSubmit)="saveFlat()" #flatForm="ngForm">
+        <div class="modal-body">
+          <div class="row g-3">
+            <!-- Flat No -->
+            <div class="col-md-6">
+              <label for="flatNo" class="form-label">Flat No <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="flatNo" name="flatNo"
+                [(ngModel)]="currentFlat.flatNo" required placeholder="e.g. A-101">
+            </div>
+
+            <!-- Building Name -->
+            <div class="col-md-6">
+              <label for="buildingName" class="form-label">Building Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="buildingName" name="buildingName"
+                [(ngModel)]="currentFlat.buildingName" required placeholder="e.g. Sunshine Residency">
+            </div>
+
+            <!-- Monthly Rent -->
+            <div class="col-md-6">
+              <label for="monthlyRent" class="form-label">Monthly Rent (₹) <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="monthlyRent" name="monthlyRent"
+                [(ngModel)]="currentFlat.monthlyRent" required min="0" placeholder="0">
+            </div>
+
+            <!-- Deposit Amount -->
+            <div class="col-md-6">
+              <label for="depositAmount" class="form-label">Deposit Amount (₹) <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="depositAmount" name="depositAmount"
+                [(ngModel)]="currentFlat.depositAmount" required min="0" placeholder="0">
+            </div>
+
+            <!-- Status -->
+            <div class="col-12">
+              <label for="status" class="form-label">Status</label>
+              <select class="form-select" id="status" name="status" [(ngModel)]="currentFlat.status">
+                <option value="Vacant">Vacant</option>
+                <option value="Occupied">Occupied</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" (click)="closeModal()">
+            <i class="bi bi-x-lg me-1"></i>Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="!flatForm.valid">
+            <i class="bi bi-check-lg me-1"></i>{{ isEditing ? 'Update' : 'Save' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

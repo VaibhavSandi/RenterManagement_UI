@@ -1,0 +1,95 @@
+/* Report Card */
+.report-card {
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.report-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: transparent;
+  transition: background 0.25s;
+}
+
+.report-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12) !important;
+}
+
+.report-card:hover::before {
+  background: var(--card-accent, #2563eb);
+}
+
+/* Icon Circle */
+.icon-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  transition: transform 0.25s;
+}
+
+.report-card:hover .icon-circle {
+  transform: scale(1.1);
+}
+
+/* Card Title */
+.card-title {
+  font-size: 1.05rem;
+  color: #1f2937;
+}
+
+/* Card Text */
+.card-text {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* Action Button */
+.action-btn {
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.5rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  color: #fff;
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Alert */
+.alert-success {
+  border-radius: 10px;
+  border: none;
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .icon-circle {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+
+  .card-body {
+    padding: 1.25rem !important;
+  }
+}

@@ -1,0 +1,191 @@
+<div class="dashboard-container">
+  <!-- Page Title -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h2 class="page-title mb-0">
+      <i class="bi bi-speedometer2 me-2"></i>Dashboard
+    </h2>
+    <span class="text-muted small">Welcome back!</span>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="row g-3 mb-4">
+    <!-- Total Flats -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="stat-card" style="background: #3b82f6;">
+        <div class="stat-icon">
+          <i class="bi bi-building"></i>
+        </div>
+        <div class="stat-value">{{ stats.totalFlats }}</div>
+        <div class="stat-label">Total Flats</div>
+      </div>
+    </div>
+
+    <!-- Occupied Flats -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="stat-card" style="background: #22c55e;">
+        <div class="stat-icon">
+          <i class="bi bi-house-check"></i>
+        </div>
+        <div class="stat-value">{{ stats.occupiedFlats }}</div>
+        <div class="stat-label">Occupied Flats</div>
+      </div>
+    </div>
+
+    <!-- Vacant Flats -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="stat-card" style="background: #f59e0b;">
+        <div class="stat-icon">
+          <i class="bi bi-house"></i>
+        </div>
+        <div class="stat-value">{{ stats.vacantFlats }}</div>
+        <div class="stat-label">Vacant Flats</div>
+      </div>
+    </div>
+
+    <!-- Current Month Rent -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="stat-card" style="background: #8b5cf6;">
+        <div class="stat-icon">
+          <i class="bi bi-currency-rupee"></i>
+        </div>
+        <div class="stat-value">{{ formatCurrency(stats.currentMonthRent) }}</div>
+        <div class="stat-label">Current Month Rent</div>
+      </div>
+    </div>
+
+    <!-- Collected Amount -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="stat-card" style="background: #10b981;">
+        <div class="stat-icon">
+          <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="stat-value">{{ formatCurrency(stats.collectedAmount) }}</div>
+        <div class="stat-label">Collected Amount</div>
+      </div>
+    </div>
+
+    <!-- Pending Amount -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="stat-card" style="background: #ef4444;">
+        <div class="stat-icon">
+          <i class="bi bi-exclamation-circle"></i>
+        </div>
+        <div class="stat-value">{{ formatCurrency(stats.pendingAmount) }}</div>
+        <div class="stat-label">Pending Amount</div>
+      </div>
+    </div>
+
+    <!-- Active Renters -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="stat-card" style="background: #06b6d4;">
+        <div class="stat-icon">
+          <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-value">{{ stats.totalActiveRenters }}</div>
+        <div class="stat-label">Active Renters</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tables Row -->
+  <div class="row g-4">
+    <!-- Recent Payments -->
+    <div class="col-12 col-xl-7">
+      <div class="card table-card">
+        <div class="card-header bg-white d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">
+            <i class="bi bi-clock-history me-2 text-primary"></i>Recent Payments
+          </h5>
+          <a routerLink="/rent-payment" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Renter</th>
+                  <th>Flat</th>
+                  <th>Month</th>
+                  <th>Amount</th>
+                  <th>Mode</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let payment of recentPayments">
+                  <td class="fw-medium">{{ payment.renterName }}</td>
+                  <td>
+                    <span class="badge bg-light text-dark border">{{ payment.flatNo }}</span>
+                  </td>
+                  <td>{{ payment.month }}</td>
+                  <td class="fw-semibold text-success">{{ formatCurrency(payment.amountPaid) }}</td>
+                  <td>
+                    <span class="badge"
+                      [ngClass]="{
+                        'bg-info-subtle text-info': payment.paymentMode === 'UPI',
+                        'bg-primary-subtle text-primary': payment.paymentMode === 'Bank',
+                        'bg-warning-subtle text-warning': payment.paymentMode === 'Cash'
+                      }">
+                      {{ payment.paymentMode }}
+                    </span>
+                  </td>
+                  <td class="text-muted">{{ payment.paymentDate }}</td>
+                </tr>
+                <tr *ngIf="recentPayments.length === 0">
+                  <td colspan="6" class="text-center text-muted py-4">No recent payments</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Rents -->
+    <div class="col-12 col-xl-5">
+      <div class="card table-card">
+        <div class="card-header bg-white d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">
+            <i class="bi bi-exclamation-triangle me-2 text-danger"></i>Pending Rents
+          </h5>
+          <span class="badge bg-danger rounded-pill">{{ pendingRents.length }}</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Renter</th>
+                  <th>Flat</th>
+                  <th>Pending</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rent of pendingRents">
+                  <td class="fw-medium">{{ rent.renterName }}</td>
+                  <td>
+                    <span class="badge bg-light text-dark border">{{ rent.flatNo }}</span>
+                  </td>
+                  <td class="fw-semibold text-danger">{{ formatCurrency(rent.pendingAmount) }}</td>
+                  <td>
+                    <span class="badge"
+                      [ngClass]="{
+                        'bg-danger-subtle text-danger': rent.status === 'Pending',
+                        'bg-warning-subtle text-warning': rent.status === 'Partial'
+                      }">
+                      {{ rent.status }}
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="pendingRents.length === 0">
+                  <td colspan="4" class="text-center text-muted py-4">No pending rents 🎉</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

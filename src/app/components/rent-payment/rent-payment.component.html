@@ -1,80 +1,73 @@
 <div class="container-fluid py-4">
   <!-- Page Header -->
-  <div class="mb-4">
+  <div class="d-flex align-items-center justify-content-between mb-4">
     <h2 class="page-title mb-0">
-      <i class="bi bi-cash-stack me-2"></i>Add Rent Payment
+      <i class="bi bi-cash-stack me-2"></i>{{ lang.t('payment_title') }}
     </h2>
   </div>
 
   <!-- Success Alert -->
-  <div class="alert alert-success alert-dismissible fade show d-flex align-items-center"
+  <div class="alert alert-success d-flex align-items-center"
     *ngIf="showSuccess" role="alert">
     <i class="bi bi-check-circle-fill me-2 fs-5"></i>
-    <strong>Payment recorded successfully!</strong>
-    <button type="button" class="btn-close" (click)="showSuccess = false"></button>
+    <strong>{{ lang.t('payment_success') }}</strong>
+    <button type="button" class="btn-close ms-auto" (click)="showSuccess = false"></button>
   </div>
 
   <!-- Payment Form Card -->
-  <div class="card shadow-sm mb-4">
+  <div class="card mb-4">
     <div class="card-header">
       <h5 class="card-header-title mb-0">
-        <i class="bi bi-receipt me-2"></i>Payment Details
+        <i class="bi bi-receipt text-primary"></i>{{ lang.t('payment_details') }}
       </h5>
     </div>
     <div class="card-body">
       <form (ngSubmit)="submitPayment()">
         <div class="row g-3">
-          <!-- Select Renter -->
           <div class="col-md-6">
-            <label class="form-label">Select Renter <span class="text-danger">*</span></label>
+            <label class="form-label">{{ lang.t('payment_lbl_renter') }} <span class="text-danger">*</span></label>
             <select class="form-select" [(ngModel)]="payment.renterId"
               name="renterId" required (ngModelChange)="onRenterChange()">
-              <option [ngValue]="0" disabled>-- Choose Renter --</option>
+              <option [ngValue]="0" disabled>{{ lang.t('payment_ph_renter') }}</option>
               <option *ngFor="let renter of activeRenters" [ngValue]="renter.id">
                 {{ renter.renterName }} ({{ renter.flatNo }})
               </option>
             </select>
           </div>
-          <!-- Select Month -->
           <div class="col-md-6">
-            <label class="form-label">Select Month <span class="text-danger">*</span></label>
+            <label class="form-label">{{ lang.t('payment_lbl_month') }} <span class="text-danger">*</span></label>
             <select class="form-select" [(ngModel)]="payment.month" name="month" required>
-              <option value="" disabled>-- Choose Month --</option>
+              <option value="" disabled>{{ lang.t('payment_ph_month') }}</option>
               <option *ngFor="let m of months" [value]="m">{{ m }}</option>
             </select>
           </div>
-          <!-- Amount Paid -->
           <div class="col-md-4">
-            <label class="form-label">Amount Paid (₹) <span class="text-danger">*</span></label>
+            <label class="form-label">{{ lang.t('payment_lbl_amount') }} <span class="text-danger">*</span></label>
             <input type="number" class="form-control" [(ngModel)]="payment.amountPaid"
               name="amountPaid" required placeholder="0">
           </div>
-          <!-- Payment Date -->
           <div class="col-md-4">
-            <label class="form-label">Payment Date <span class="text-danger">*</span></label>
+            <label class="form-label">{{ lang.t('payment_lbl_date') }} <span class="text-danger">*</span></label>
             <input type="date" class="form-control" [(ngModel)]="payment.paymentDate"
               name="paymentDate" required>
           </div>
-          <!-- Payment Mode -->
           <div class="col-md-4">
-            <label class="form-label">Payment Mode</label>
+            <label class="form-label">{{ lang.t('payment_lbl_mode') }}</label>
             <select class="form-select" [(ngModel)]="payment.paymentMode" name="paymentMode">
-              <option value="Cash">Cash</option>
-              <option value="UPI">UPI</option>
-              <option value="Bank">Bank Transfer</option>
+              <option value="Cash">{{ lang.t('mode_cash') }}</option>
+              <option value="UPI">{{ lang.t('mode_upi') }}</option>
+              <option value="Bank">{{ lang.t('mode_bank') }}</option>
             </select>
           </div>
-          <!-- Remark -->
           <div class="col-12">
-            <label class="form-label">Remark</label>
+            <label class="form-label">{{ lang.t('payment_lbl_remark') }}</label>
             <textarea class="form-control" [(ngModel)]="payment.remark" name="remark"
-              rows="2" placeholder="Any notes about this payment..."></textarea>
+              rows="2" [placeholder]="lang.t('payment_ph_remark')"></textarea>
           </div>
         </div>
-
         <div class="d-flex justify-content-end mt-4">
           <button type="submit" class="btn btn-primary btn-lg">
-            <i class="bi bi-check2-circle me-1"></i> Submit Payment
+            <i class="bi bi-check2-circle me-1"></i> {{ lang.t('payment_submit') }}
           </button>
         </div>
       </form>
@@ -82,50 +75,98 @@
   </div>
 
   <!-- Recent Payments Table -->
-  <div class="card shadow-sm">
+  <div class="card">
     <div class="card-header">
       <h5 class="card-header-title mb-0">
-        <i class="bi bi-clock-history me-2"></i>Recent Payments
+        <i class="bi bi-clock-history text-primary"></i>{{ lang.t('payment_recent') }}
       </h5>
+      <span class="info-pill info-pill-primary">{{ displayedPayments.length }} {{ lang.t('txn_records') }}</span>
     </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar" style="padding: 12px 16px 0;">
+      <div class="filter-bar-inner">
+        <div class="filter-search-wrap">
+          <i class="bi bi-search filter-search-icon"></i>
+          <input type="text" class="form-control filter-search-input"
+            [placeholder]="lang.t('lbl_search_placeholder')" [(ngModel)]="filterSearch" />
+        </div>
+        <div class="filter-select-wrap">
+          <i class="bi bi-funnel filter-select-icon"></i>
+          <select class="form-select filter-select" [(ngModel)]="filterMode">
+            <option value="">{{ lang.t('lbl_all') }} {{ lang.t('payment_lbl_mode') }}</option>
+            <option value="Cash">{{ lang.t('mode_cash') }}</option>
+            <option value="UPI">{{ lang.t('mode_upi') }}</option>
+            <option value="Bank">{{ lang.t('mode_bank') }}</option>
+          </select>
+        </div>
+        <button *ngIf="hasActiveFilters" class="filter-reset-btn" (click)="resetFilters()">
+          <i class="bi bi-x-circle"></i> {{ lang.t('btn_reset') }}
+        </button>
+        <span class="filter-count">
+          {{ displayedPayments.length }} / {{ payments.length }}
+        </span>
+      </div>
+    </div>
+
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover table-pro align-middle mb-0">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Renter</th>
-              <th>Flat No</th>
-              <th>Month</th>
-              <th>Amount</th>
-              <th>Date</th>
-              <th>Mode</th>
-              <th>Remark</th>
+              <th>{{ lang.t('lbl_no') }}</th>
+              <th class="sortable-th" (click)="onSort('renterName')">
+                {{ lang.t('payment_col_renter') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('renterName') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('flatNo')">
+                {{ lang.t('payment_col_flat') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('flatNo') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('month')">
+                {{ lang.t('payment_col_month') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('month') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('amountPaid')">
+                {{ lang.t('payment_col_amount') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('amountPaid') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('paymentDate')">
+                {{ lang.t('payment_col_date') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('paymentDate') }}"></i>
+              </th>
+              <th>{{ lang.t('payment_col_mode') }}</th>
+              <th>{{ lang.t('payment_col_remark') }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let p of payments; let i = index">
-              <td>{{ i + 1 }}</td>
+            <tr *ngFor="let p of displayedPayments; let i = index">
+              <td class="text-muted fw-semibold">{{ i + 1 }}</td>
               <td class="fw-semibold">{{ p.renterName }}</td>
-              <td>{{ p.flatNo }}</td>
+              <td><span class="info-pill info-pill-primary">{{ p.flatNo }}</span></td>
               <td>{{ p.month }}</td>
-              <td class="text-success fw-semibold">₹{{ p.amountPaid | number }}</td>
+              <td class="text-success fw-bold">₹{{ p.amountPaid | number }}</td>
               <td>{{ p.paymentDate }}</td>
               <td>
-                <span class="badge"
+                <span class="status-badge"
                   [ngClass]="{
-                    'bg-info text-dark': p.paymentMode === 'UPI',
-                    'bg-warning text-dark': p.paymentMode === 'Cash',
-                    'bg-primary': p.paymentMode === 'Bank'
+                    'status-active': p.paymentMode === 'UPI',
+                    'status-partial': p.paymentMode === 'Cash',
+                    'status-vacant': p.paymentMode === 'Bank'
                   }">
-                  {{ p.paymentMode }}
+                  {{ p.paymentMode === 'Cash' ? lang.t('mode_cash') :
+                     p.paymentMode === 'UPI'  ? lang.t('mode_upi') :
+                     lang.t('mode_bank') }}
                 </span>
               </td>
               <td class="text-muted">{{ p.remark || '—' }}</td>
             </tr>
-            <tr *ngIf="payments.length === 0">
-              <td colspan="8" class="text-center text-muted py-4">
-                No payments recorded yet.
+            <tr *ngIf="displayedPayments.length === 0">
+              <td colspan="8" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <h5>{{ lang.t('payment_no_data') }}</h5>
+                </div>
               </td>
             </tr>
           </tbody>

@@ -2,11 +2,38 @@
   <!-- Page Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="page-title mb-0">
-      <i class="bi bi-people-fill me-2"></i>Renter Master
+      <i class="bi bi-people-fill me-2"></i>{{ lang.t('renter_title') }}
     </h2>
     <button class="btn btn-primary" (click)="openAddModal()">
-      <i class="bi bi-plus-circle me-1"></i> Add Renter
+      <i class="bi bi-plus-circle me-1"></i> {{ lang.t('renter_add') }}
     </button>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar mb-3">
+    <div class="filter-bar-inner">
+      <div class="filter-search-wrap">
+        <i class="bi bi-search filter-search-icon"></i>
+        <input
+          id="renter-search"
+          type="text"
+          class="form-control filter-search-input"
+          [placeholder]="lang.t('renter_filter_search')"
+          [(ngModel)]="filterSearch"
+        />
+      </div>
+      <div class="filter-select-wrap">
+        <i class="bi bi-funnel filter-select-icon"></i>
+        <select id="renter-status-filter" class="form-select filter-select" [(ngModel)]="filterStatus">
+          <option value="">{{ lang.t('renter_filter_all') }}</option>
+          <option value="Active">{{ lang.t('status_active') }}</option>
+          <option value="Left">{{ lang.t('status_left') }}</option>
+        </select>
+      </div>
+      <span class="filter-count">
+        {{ displayedRenters.length }} / {{ renters.length }} {{ lang.t('lbl_total') }}
+      </span>
+    </div>
   </div>
 
   <!-- Renter Table -->
@@ -16,52 +43,65 @@
         <table class="table table-hover align-middle mb-0">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Name</th>
-              <th>Mobile</th>
-              <th>Flat No</th>
-              <th>Building</th>
-              <th>Monthly Rent</th>
-              <th>Deposit</th>
-              <th>Status</th>
-              <th class="text-center">Actions</th>
+              <th>{{ lang.t('lbl_no') }}</th>
+              <th class="sortable-th" (click)="onSort('renterName')">
+                {{ lang.t('renter_col_name') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('renterName') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('mobileNumber')">
+                {{ lang.t('renter_col_mobile') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('mobileNumber') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('flatNo')">
+                {{ lang.t('renter_col_flat') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('flatNo') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('monthlyRent')">
+                {{ lang.t('renter_col_rent') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('monthlyRent') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('depositPaid')">
+                {{ lang.t('renter_col_deposit') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('depositPaid') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('status')">
+                {{ lang.t('renter_col_status') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('status') }}"></i>
+              </th>
+              <th class="text-center">{{ lang.t('lbl_actions') }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let renter of renters; let i = index">
+            <tr *ngFor="let renter of displayedRenters; let i = index">
               <td>{{ i + 1 }}</td>
               <td class="fw-semibold">{{ renter.renterName }}</td>
               <td>{{ renter.mobileNumber }}</td>
               <td>{{ renter.flatNo }}</td>
-              <td>{{ renter.buildingName }}</td>
               <td>₹{{ renter.monthlyRent | number }}</td>
               <td>₹{{ renter.depositPaid | number }}</td>
               <td>
                 <span class="badge"
                   [ngClass]="renter.status === 'Active' ? 'bg-success' : 'bg-danger'">
-                  {{ renter.status }}
+                  {{ renter.status === 'Active' ? lang.t('status_active') : lang.t('status_left') }}
                 </span>
               </td>
               <td class="text-center">
                 <div class="btn-group btn-group-sm">
-                  <button class="btn btn-outline-info" title="View"
-                    (click)="openViewModal(renter)">
+                  <button class="btn btn-outline-info" [title]="lang.t('btn_view')" (click)="openViewModal(renter)">
                     <i class="bi bi-eye"></i>
                   </button>
-                  <button class="btn btn-outline-primary" title="Edit"
-                    (click)="openEditModal(renter)">
+                  <button class="btn btn-outline-primary" [title]="lang.t('btn_edit')" (click)="openEditModal(renter)">
                     <i class="bi bi-pencil"></i>
                   </button>
-                  <button class="btn btn-outline-danger" title="Delete"
-                    (click)="deleteRenter(renter.id)">
+                  <button class="btn btn-outline-danger" [title]="lang.t('btn_delete')" (click)="deleteRenter(renter.renterId!)">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
               </td>
             </tr>
-            <tr *ngIf="renters.length === 0">
+            <tr *ngIf="displayedRenters.length === 0">
               <td colspan="9" class="text-center text-muted py-4">
-                No renters found. Click "Add Renter" to get started.
+                {{ lang.t('renter_no_data') }}
               </td>
             </tr>
           </tbody>
@@ -78,7 +118,7 @@
     <div class="modal-header">
       <h5 class="modal-title">
         <i class="bi" [ngClass]="isEditing ? 'bi-pencil-square' : 'bi-person-plus'"></i>
-        {{ isEditing ? 'Edit Renter' : 'Add New Renter' }}
+        {{ isEditing ? lang.t('renter_edit') : lang.t('renter_add_new') }}
       </h5>
       <button type="button" class="btn-close" (click)="closeModal()"></button>
     </div>
@@ -87,66 +127,66 @@
         <div class="row g-3">
           <!-- Renter Name -->
           <div class="col-md-6">
-            <label class="form-label">Renter Name <span class="text-danger">*</span></label>
+            <label class="form-label">{{ lang.t('renter_lbl_name') }} <span class="text-danger">*</span></label>
             <input type="text" class="form-control" [(ngModel)]="currentRenter.renterName"
-              name="renterName" required placeholder="Enter full name">
+              name="renterName" required [placeholder]="lang.t('renter_ph_name')">
           </div>
           <!-- Mobile Number -->
           <div class="col-md-6">
-            <label class="form-label">Mobile Number <span class="text-danger">*</span></label>
+            <label class="form-label">{{ lang.t('renter_lbl_mobile') }} <span class="text-danger">*</span></label>
             <input type="text" class="form-control" [(ngModel)]="currentRenter.mobileNumber"
-              name="mobileNumber" required placeholder="10-digit mobile">
+              name="mobileNumber" required [placeholder]="lang.t('renter_ph_mobile')">
           </div>
           <!-- Flat No -->
           <div class="col-md-6">
-            <label class="form-label">Flat No <span class="text-danger">*</span></label>
+            <label class="form-label">{{ lang.t('renter_lbl_flat') }} <span class="text-danger">*</span></label>
             <select class="form-select" [(ngModel)]="currentRenter.flatId"
               name="flatId" required (ngModelChange)="onFlatChange()">
-              <option [ngValue]="0" disabled>-- Select Flat --</option>
-              <option *ngFor="let flat of flats" [ngValue]="flat.id">
+              <option [ngValue]="0" disabled>{{ lang.t('renter_select_flat') }}</option>
+              <option *ngFor="let flat of flats" [ngValue]="flat.flatId">
                 {{ flat.flatNo }} - {{ flat.buildingName }}
               </option>
             </select>
           </div>
           <!-- Joining Date -->
           <div class="col-md-6">
-            <label class="form-label">Joining Date <span class="text-danger">*</span></label>
+            <label class="form-label">{{ lang.t('renter_lbl_joining') }} <span class="text-danger">*</span></label>
             <input type="date" class="form-control" [(ngModel)]="currentRenter.joiningDate"
               name="joiningDate" required>
           </div>
           <!-- Monthly Rent -->
           <div class="col-md-6">
-            <label class="form-label">Monthly Rent (₹)</label>
+            <label class="form-label">{{ lang.t('renter_lbl_rent') }}</label>
             <input type="number" class="form-control" [(ngModel)]="currentRenter.monthlyRent"
-              name="monthlyRent" placeholder="Auto-filled from flat">
+              name="monthlyRent" [placeholder]="lang.t('renter_ph_rent')">
           </div>
           <!-- Deposit Paid -->
           <div class="col-md-6">
-            <label class="form-label">Deposit Paid (₹)</label>
+            <label class="form-label">{{ lang.t('renter_lbl_deposit') }}</label>
             <input type="number" class="form-control" [(ngModel)]="currentRenter.depositPaid"
-              name="depositPaid" placeholder="Enter deposit amount">
+              name="depositPaid" [placeholder]="lang.t('renter_ph_deposit')">
           </div>
           <!-- ID Proof No -->
           <div class="col-md-6">
-            <label class="form-label">ID Proof No</label>
+            <label class="form-label">{{ lang.t('renter_lbl_id_proof') }}</label>
             <input type="text" class="form-control" [(ngModel)]="currentRenter.idProofNo"
-              name="idProofNo" placeholder="Aadhaar / PAN / DL">
+              name="idProofNo" [placeholder]="lang.t('renter_ph_id_proof')">
           </div>
           <!-- Status -->
           <div class="col-md-6">
-            <label class="form-label">Status</label>
+            <label class="form-label">{{ lang.t('renter_lbl_status') }}</label>
             <select class="form-select" [(ngModel)]="currentRenter.status" name="status">
-              <option value="Active">Active</option>
-              <option value="Left">Left</option>
+              <option value="Active">{{ lang.t('status_active') }}</option>
+              <option value="Left">{{ lang.t('status_left') }}</option>
             </select>
           </div>
         </div>
 
         <div class="d-flex justify-content-end gap-2 mt-4">
-          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">{{ lang.t('btn_cancel') }}</button>
           <button type="submit" class="btn btn-primary">
             <i class="bi" [ngClass]="isEditing ? 'bi-check-lg' : 'bi-plus-lg'"></i>
-            {{ isEditing ? 'Update' : 'Save' }}
+            {{ isEditing ? lang.t('btn_update') : lang.t('btn_save') }}
           </button>
         </div>
       </form>
@@ -160,7 +200,7 @@
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h5 class="modal-title">
-        <i class="bi bi-person-badge me-2"></i>Renter Details
+        <i class="bi bi-person-badge me-2"></i>{{ lang.t('renter_details') }}
       </h5>
       <button type="button" class="btn-close" (click)="closeModal()"></button>
     </div>
@@ -168,50 +208,46 @@
       <div class="detail-card">
         <div class="row g-3">
           <div class="col-sm-6">
-            <div class="detail-label">Renter Name</div>
+            <div class="detail-label">{{ lang.t('renter_detail_name') }}</div>
             <div class="detail-value">{{ viewRenter.renterName }}</div>
           </div>
           <div class="col-sm-6">
-            <div class="detail-label">Mobile Number</div>
+            <div class="detail-label">{{ lang.t('renter_detail_mobile') }}</div>
             <div class="detail-value">{{ viewRenter.mobileNumber }}</div>
           </div>
           <div class="col-sm-6">
-            <div class="detail-label">Flat No</div>
+            <div class="detail-label">{{ lang.t('renter_detail_flat') }}</div>
             <div class="detail-value">{{ viewRenter.flatNo }}</div>
           </div>
           <div class="col-sm-6">
-            <div class="detail-label">Building</div>
-            <div class="detail-value">{{ viewRenter.buildingName }}</div>
-          </div>
-          <div class="col-sm-6">
-            <div class="detail-label">Joining Date</div>
+            <div class="detail-label">{{ lang.t('renter_detail_joining') }}</div>
             <div class="detail-value">{{ viewRenter.joiningDate }}</div>
           </div>
           <div class="col-sm-6">
-            <div class="detail-label">Monthly Rent</div>
+            <div class="detail-label">{{ lang.t('renter_detail_rent') }}</div>
             <div class="detail-value fw-semibold text-primary">₹{{ viewRenter.monthlyRent | number }}</div>
           </div>
           <div class="col-sm-6">
-            <div class="detail-label">Deposit Paid</div>
+            <div class="detail-label">{{ lang.t('renter_detail_deposit') }}</div>
             <div class="detail-value">₹{{ viewRenter.depositPaid | number }}</div>
           </div>
           <div class="col-sm-6">
-            <div class="detail-label">ID Proof No</div>
+            <div class="detail-label">{{ lang.t('renter_detail_id') }}</div>
             <div class="detail-value">{{ viewRenter.idProofNo }}</div>
           </div>
           <div class="col-sm-6">
-            <div class="detail-label">Status</div>
+            <div class="detail-label">{{ lang.t('renter_detail_status') }}</div>
             <div class="detail-value">
               <span class="badge"
                 [ngClass]="viewRenter.status === 'Active' ? 'bg-success' : 'bg-danger'">
-                {{ viewRenter.status }}
+                {{ viewRenter.status === 'Active' ? lang.t('status_active') : lang.t('status_left') }}
               </span>
             </div>
           </div>
         </div>
       </div>
       <div class="d-flex justify-content-end mt-3">
-        <button class="btn btn-secondary" (click)="closeModal()">Close</button>
+        <button class="btn btn-secondary" (click)="closeModal()">{{ lang.t('btn_close') }}</button>
       </div>
     </div>
   </div>

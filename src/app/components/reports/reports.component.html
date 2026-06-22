@@ -2,7 +2,7 @@
   <!-- Page Title -->
   <div class="d-flex align-items-center mb-4">
     <i class="bi bi-bar-chart-line fs-3 text-primary me-2"></i>
-    <h2 class="mb-0 fw-bold">Reports</h2>
+    <h2 class="mb-0 fw-bold">{{ lang.t('reports_title') }}</h2>
   </div>
 
   <!-- Success Alert -->
@@ -32,7 +32,7 @@
           <button class="btn action-btn" [style.background]="report.color" [style.border-color]="report.color"
                   (click)="generateReport(report); $event.stopPropagation()">
             <i class="bi me-1" [ngClass]="report.action === 'Export' ? 'bi-download' : 'bi-play-fill'"></i>
-            {{ report.action }}
+            {{ report.action === 'Export' ? lang.t('btn_export') : lang.t('btn_generate') }}
           </button>
         </div>
       </div>

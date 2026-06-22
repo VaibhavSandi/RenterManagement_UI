@@ -1,20 +1,29 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MockDataService } from '../../services/mock-data.service';
 import { Renter, Settlement } from '../../models/interfaces';
+import { LanguageService } from '../../services/language.service';
+import { SortConfig, sortArray, toggleSort, sortIcon } from '../../utils/table.utils';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-final-settlement',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './final-settlement.component.html',
-  styleUrls: ['./final-settlement.component.css']
+  styleUrls: ['./final-settlement.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FinalSettlementComponent implements OnInit {
+export class FinalSettlementComponent implements OnInit, OnDestroy {
   activeRenters: Renter[] = [];
   settlements: Settlement[] = [];
   showSuccess = false;
+
+  sortConfig: SortConfig = { column: '', direction: '' };
+
+  // Filter state
+  filterSearch = '';
 
   settlement: any = {
     renterId: 0,
@@ -29,11 +38,22 @@ export class FinalSettlementComponent implements OnInit {
     settlementDate: ''
   };
 
-  constructor(private dataService: MockDataService) {}
+  private langSub!: Subscription;
+
+  constructor(
+    private dataService: MockDataService,
+    public lang: LanguageService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.activeRenters = this.dataService.getActiveRenters();
     this.settlements = this.dataService.getSettlements();
+    this.langSub = this.lang.lang$.subscribe(() => this.cdr.markForCheck());
+  }
+
+  ngOnDestroy(): void {
+    this.langSub?.unsubscribe();
   }
 
   onRenterChange(): void {
@@ -44,6 +64,7 @@ export class FinalSettlementComponent implements OnInit {
       this.settlement.depositAmount = renter.depositPaid;
     }
     this.calculateRefund();
+    this.cdr.markForCheck();
   }
 
   calculateRefund(): void {
@@ -62,6 +83,42 @@ export class FinalSettlementComponent implements OnInit {
     };
     this.activeRenters = this.dataService.getActiveRenters();
     this.settlements = this.dataService.getSettlements();
-    setTimeout(() => this.showSuccess = false, 3000);
+    this.cdr.markForCheck();
+    setTimeout(() => {
+      this.showSuccess = false;
+      this.cdr.markForCheck();
+    }, 3000);
+  }
+
+  onSort(column: string): void {
+    this.sortConfig = toggleSort(this.sortConfig, column);
+    this.cdr.markForCheck();
+  }
+
+  sortIconClass(column: string): string {
+    return sortIcon(this.sortConfig, column);
+  }
+
+  resetFilters(): void {
+    this.filterSearch = '';
+    this.cdr.markForCheck();
+  }
+
+  get hasActiveFilters(): boolean {
+    return this.filterSearch.trim().length > 0;
+  }
+
+  get displayedSettlements(): Settlement[] {
+    let result = this.settlements;
+
+    if (this.filterSearch.trim()) {
+      const q = this.filterSearch.trim().toLowerCase();
+      result = result.filter(s =>
+        (s.renterName || '').toLowerCase().includes(q) ||
+        (s.flatNo || '').toLowerCase().includes(q)
+      );
+    }
+
+    return sortArray(result, this.sortConfig.column, this.sortConfig.direction);
   }
 }

@@ -2,24 +2,59 @@
   <!-- Page Header -->
   <div class="d-flex align-items-center justify-content-between mb-4">
     <h2 class="page-title mb-0">
-      <i class="bi bi-building me-2"></i>Flat Master
+      <i class="bi bi-building me-2"></i>{{ lang.t('flat_title') }}
     </h2>
     <button class="btn btn-primary" (click)="openAddModal()">
-      <i class="bi bi-plus-lg me-1"></i>Add Flat
+      <i class="bi bi-plus-lg me-1"></i>{{ lang.t('flat_add') }}
     </button>
   </div>
 
   <!-- Flat Count Info -->
-  <div class="d-flex gap-3 mb-3">
-    <span class="badge bg-primary-subtle text-primary px-3 py-2">
-      <i class="bi bi-building me-1"></i>Total: {{ flats.length }}
+  <div class="d-flex gap-3 mb-3 flex-wrap">
+    <span class="info-pill info-pill-primary">
+      <i class="bi bi-building"></i>{{ lang.t('flat_total') }}: {{ flats.length }}
     </span>
-    <span class="badge bg-success-subtle text-success px-3 py-2">
-      <i class="bi bi-house-check me-1"></i>Occupied: {{ occupiedCount }}
+    <span class="info-pill info-pill-success">
+      <i class="bi bi-house-check"></i>{{ lang.t('flat_occupied') }}: {{ occupiedCount }}
     </span>
-    <span class="badge bg-warning-subtle text-warning px-3 py-2">
-      <i class="bi bi-house me-1"></i>Vacant: {{ vacantCount }}
+    <span class="info-pill info-pill-warning">
+      <i class="bi bi-house"></i>{{ lang.t('flat_vacant') }}: {{ vacantCount }}
     </span>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar mb-3">
+    <div class="filter-bar-inner">
+      <!-- Search Input -->
+      <div class="filter-search-wrap">
+        <i class="bi bi-search filter-search-icon"></i>
+        <input
+          id="flat-search"
+          type="text"
+          class="form-control filter-search-input"
+          [placeholder]="lang.t('flat_filter_search')"
+          [(ngModel)]="filterSearch"
+        />
+      </div>
+
+      <!-- Status Filter -->
+      <div class="filter-select-wrap">
+        <i class="bi bi-funnel filter-select-icon"></i>
+        <select id="flat-status-filter" class="form-select filter-select" [(ngModel)]="filterStatus">
+          <option value="">{{ lang.t('flat_filter_all') }}</option>
+          <option value="Occupied">{{ lang.t('status_occupied') }}</option>
+          <option value="Vacant">{{ lang.t('status_vacant') }}</option>
+        </select>
+      </div>
+
+      <!-- Result Count -->
+      <button *ngIf="hasActiveFilters" class="filter-reset-btn" (click)="resetFilters()">
+        <i class="bi bi-x-circle"></i> {{ lang.t('btn_reset') }}
+      </button>
+      <span class="filter-count">
+        {{ displayedFlats.length }} / {{ flats.length }} {{ lang.t('lbl_total') }}
+      </span>
+    </div>
   </div>
 
   <!-- Flats Table -->
@@ -29,50 +64,61 @@
         <table class="table table-hover align-middle mb-0">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Flat No</th>
-              <th>Building Name</th>
-              <th>Monthly Rent</th>
-              <th>Deposit</th>
-              <th>Status</th>
-              <th class="text-center">Actions</th>
+              <th>{{ lang.t('lbl_no') }}</th>
+              <th class="sortable-th" (click)="onSort('flatNo')">
+                {{ lang.t('flat_col_no') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('flatNo') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('buildingName')">
+                {{ lang.t('flat_col_building') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('buildingName') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('monthlyRent')">
+                {{ lang.t('flat_col_rent') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('monthlyRent') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('depositAmount')">
+                {{ lang.t('flat_col_deposit') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('depositAmount') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('status')">
+                {{ lang.t('flat_col_status') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('status') }}"></i>
+              </th>
+              <th class="text-center">{{ lang.t('lbl_actions') }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let flat of flats; let i = index">
+            <tr *ngFor="let flat of displayedFlats; let i = index">
               <td class="text-muted">{{ i + 1 }}</td>
               <td class="fw-semibold">{{ flat.flatNo }}</td>
               <td>{{ flat.buildingName }}</td>
               <td class="fw-medium">{{ formatCurrency(flat.monthlyRent) }}</td>
               <td>{{ formatCurrency(flat.depositAmount) }}</td>
               <td>
-                <span class="badge rounded-pill"
+                <span class="status-badge"
                   [ngClass]="{
                     'status-occupied': flat.status === 'Occupied',
                     'status-vacant': flat.status === 'Vacant'
                   }">
-                  <i class="bi me-1" [ngClass]="{
-                    'bi-check-circle-fill': flat.status === 'Occupied',
-                    'bi-dash-circle': flat.status === 'Vacant'
-                  }"></i>
-                  {{ flat.status }}
+                  {{ flat.status === 'Occupied' ? lang.t('status_occupied') : lang.t('status_vacant') }}
                 </span>
               </td>
               <td class="text-center">
                 <div class="btn-group btn-group-sm">
-                  <button class="btn btn-outline-primary" (click)="openEditModal(flat)" title="Edit">
+                  <button class="btn btn-outline-primary" (click)="openEditModal(flat)" [title]="lang.t('btn_edit')">
                     <i class="bi bi-pencil"></i>
                   </button>
-                  <button class="btn btn-outline-danger" (click)="deleteFlat(flat.id)" title="Delete">
+                  <button class="btn btn-outline-danger" (click)="deleteFlat(flat.flatId!)" [title]="lang.t('btn_delete')">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
               </td>
             </tr>
-            <tr *ngIf="flats.length === 0">
+            <tr *ngIf="displayedFlats.length === 0">
               <td colspan="7" class="text-center text-muted py-5">
                 <i class="bi bi-inbox display-4 d-block mb-2"></i>
-                No flats found. Add your first flat!
+                {{ lang.t('flat_no_data') }}
               </td>
             </tr>
           </tbody>
@@ -90,7 +136,7 @@
       <div class="modal-header">
         <h5 class="modal-title">
           <i class="bi me-2" [ngClass]="isEditing ? 'bi-pencil-square' : 'bi-plus-circle'"></i>
-          {{ isEditing ? 'Edit Flat' : 'Add New Flat' }}
+          {{ isEditing ? lang.t('flat_edit') : lang.t('flat_add_new') }}
         </h5>
         <button type="button" class="btn-close" (click)="closeModal()"></button>
       </div>
@@ -99,48 +145,48 @@
           <div class="row g-3">
             <!-- Flat No -->
             <div class="col-md-6">
-              <label for="flatNo" class="form-label">Flat No <span class="text-danger">*</span></label>
+              <label for="flatNo" class="form-label">{{ lang.t('flat_lbl_flat_no') }} <span class="text-danger">*</span></label>
               <input type="text" class="form-control" id="flatNo" name="flatNo"
-                [(ngModel)]="currentFlat.flatNo" required placeholder="e.g. A-101">
+                [(ngModel)]="currentFlat.flatNo" required [placeholder]="lang.t('flat_ph_flat_no')">
             </div>
 
             <!-- Building Name -->
             <div class="col-md-6">
-              <label for="buildingName" class="form-label">Building Name <span class="text-danger">*</span></label>
+              <label for="buildingName" class="form-label">{{ lang.t('flat_lbl_building') }} <span class="text-danger">*</span></label>
               <input type="text" class="form-control" id="buildingName" name="buildingName"
-                [(ngModel)]="currentFlat.buildingName" required placeholder="e.g. Sunshine Residency">
+                [(ngModel)]="currentFlat.buildingName" required [placeholder]="lang.t('flat_ph_building')">
             </div>
 
             <!-- Monthly Rent -->
             <div class="col-md-6">
-              <label for="monthlyRent" class="form-label">Monthly Rent (₹) <span class="text-danger">*</span></label>
+              <label for="monthlyRent" class="form-label">{{ lang.t('flat_lbl_monthly_rent') }} <span class="text-danger">*</span></label>
               <input type="number" class="form-control" id="monthlyRent" name="monthlyRent"
                 [(ngModel)]="currentFlat.monthlyRent" required min="0" placeholder="0">
             </div>
 
             <!-- Deposit Amount -->
             <div class="col-md-6">
-              <label for="depositAmount" class="form-label">Deposit Amount (₹) <span class="text-danger">*</span></label>
+              <label for="depositAmount" class="form-label">{{ lang.t('flat_lbl_deposit') }} <span class="text-danger">*</span></label>
               <input type="number" class="form-control" id="depositAmount" name="depositAmount"
                 [(ngModel)]="currentFlat.depositAmount" required min="0" placeholder="0">
             </div>
 
             <!-- Status -->
             <div class="col-12">
-              <label for="status" class="form-label">Status</label>
+              <label for="status" class="form-label">{{ lang.t('flat_lbl_status') }}</label>
               <select class="form-select" id="status" name="status" [(ngModel)]="currentFlat.status">
-                <option value="Vacant">Vacant</option>
-                <option value="Occupied">Occupied</option>
+                <option value="Vacant">{{ lang.t('status_vacant') }}</option>
+                <option value="Occupied">{{ lang.t('status_occupied') }}</option>
               </select>
             </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-light" (click)="closeModal()">
-            <i class="bi bi-x-lg me-1"></i>Cancel
+            <i class="bi bi-x-lg me-1"></i>{{ lang.t('btn_cancel') }}
           </button>
           <button type="submit" class="btn btn-primary" [disabled]="!flatForm.valid">
-            <i class="bi bi-check-lg me-1"></i>{{ isEditing ? 'Update' : 'Save' }}
+            <i class="bi bi-check-lg me-1"></i>{{ isEditing ? lang.t('btn_update') : lang.t('btn_save') }}
           </button>
         </div>
       </form>

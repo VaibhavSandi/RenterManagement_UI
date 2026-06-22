@@ -2,20 +2,20 @@
   <!-- Page Title -->
   <div class="d-flex align-items-center mb-4">
     <i class="bi bi-receipt-cutoff fs-3 text-primary me-2"></i>
-    <h2 class="mb-0 fw-bold">Final Settlement</h2>
+    <h2 class="mb-0 fw-bold">{{ lang.t('settlement_title') }}</h2>
   </div>
 
   <!-- Success Alert -->
   <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" *ngIf="showSuccess" role="alert">
     <i class="bi bi-check-circle-fill me-2 fs-5"></i>
-    <strong>Settlement processed successfully!</strong> The renter has been marked as left and deposit refund recorded.
+    <strong>{{ lang.t('settlement_success') }}</strong>
     <button type="button" class="btn-close" (click)="showSuccess = false"></button>
   </div>
 
   <!-- Settlement Form Card -->
   <div class="card settlement-card shadow-sm mb-4">
     <div class="card-header bg-primary text-white">
-      <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>Settlement Calculator</h5>
+      <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>{{ lang.t('settlement_calculator') }}</h5>
     </div>
     <div class="card-body p-4">
       <form #settlementForm="ngForm" (ngSubmit)="submitSettlement()">
@@ -23,12 +23,12 @@
           <!-- Select Renter -->
           <div class="col-md-6">
             <label for="renter" class="form-label fw-semibold">
-              <i class="bi bi-person me-1"></i>Select Renter
+              <i class="bi bi-person me-1"></i>{{ lang.t('settlement_lbl_renter') }}
             </label>
             <select class="form-select" id="renter" name="renterId"
                     [(ngModel)]="settlement.renterId"
                     (ngModelChange)="onRenterChange()" required>
-              <option [value]="0" disabled>-- Choose a Renter --</option>
+              <option [value]="0" disabled>{{ lang.t('settlement_ph_renter') }}</option>
               <option *ngFor="let renter of activeRenters" [value]="renter.id">
                 {{ renter.renterName }} ({{ renter.flatNo }})
               </option>
@@ -38,7 +38,7 @@
           <!-- Leaving Date -->
           <div class="col-md-6">
             <label for="leavingDate" class="form-label fw-semibold">
-              <i class="bi bi-calendar-event me-1"></i>Leaving Date
+              <i class="bi bi-calendar-event me-1"></i>{{ lang.t('settlement_lbl_leaving') }}
             </label>
             <input type="date" class="form-control" id="leavingDate" name="leavingDate"
                    [(ngModel)]="settlement.leavingDate" required />
@@ -47,7 +47,7 @@
           <!-- Deposit Amount (readonly) -->
           <div class="col-md-6">
             <label for="depositAmount" class="form-label fw-semibold">
-              <i class="bi bi-safe me-1"></i>Deposit Amount (₹)
+              <i class="bi bi-safe me-1"></i>{{ lang.t('settlement_lbl_deposit') }}
             </label>
             <input type="number" class="form-control bg-light" id="depositAmount" name="depositAmount"
                    [(ngModel)]="settlement.depositAmount" readonly />
@@ -56,7 +56,7 @@
           <!-- Pending Rent -->
           <div class="col-md-6">
             <label for="pendingRent" class="form-label fw-semibold">
-              <i class="bi bi-exclamation-circle me-1"></i>Pending Rent (₹)
+              <i class="bi bi-exclamation-circle me-1"></i>{{ lang.t('settlement_lbl_pending') }}
             </label>
             <input type="number" class="form-control" id="pendingRent" name="pendingRent"
                    [(ngModel)]="settlement.pendingRent"
@@ -66,7 +66,7 @@
           <!-- Deduction Amount -->
           <div class="col-md-6">
             <label for="deductionAmount" class="form-label fw-semibold">
-              <i class="bi bi-dash-circle me-1"></i>Deduction Amount (₹)
+              <i class="bi bi-dash-circle me-1"></i>{{ lang.t('settlement_lbl_deduction') }}
             </label>
             <input type="number" class="form-control" id="deductionAmount" name="deductionAmount"
                    [(ngModel)]="settlement.deductionAmount"
@@ -76,11 +76,11 @@
           <!-- Deduction Reason -->
           <div class="col-md-6">
             <label for="deductionReason" class="form-label fw-semibold">
-              <i class="bi bi-chat-left-text me-1"></i>Deduction Reason
+              <i class="bi bi-chat-left-text me-1"></i>{{ lang.t('settlement_lbl_reason') }}
             </label>
             <input type="text" class="form-control" id="deductionReason" name="deductionReason"
                    [(ngModel)]="settlement.deductionReason"
-                   placeholder="e.g., Wall damage, cleaning charges" />
+                   [placeholder]="lang.t('settlement_ph_reason')" />
           </div>
         </div>
 
@@ -88,28 +88,22 @@
         <div class="formula-bar mt-4 p-3 rounded-3">
           <div class="row text-center align-items-center">
             <div class="col">
-              <small class="text-muted d-block">Deposit</small>
+              <small class="text-muted d-block">{{ lang.t('settlement_formula_deposit') }}</small>
               <span class="fw-bold text-primary">₹{{ settlement.depositAmount | number }}</span>
             </div>
-            <div class="col-auto">
-              <span class="fs-4 text-muted">−</span>
-            </div>
+            <div class="col-auto"><span class="fs-4 text-muted">−</span></div>
             <div class="col">
-              <small class="text-muted d-block">Pending Rent</small>
+              <small class="text-muted d-block">{{ lang.t('settlement_formula_pending') }}</small>
               <span class="fw-bold text-danger">₹{{ settlement.pendingRent | number }}</span>
             </div>
-            <div class="col-auto">
-              <span class="fs-4 text-muted">−</span>
-            </div>
+            <div class="col-auto"><span class="fs-4 text-muted">−</span></div>
             <div class="col">
-              <small class="text-muted d-block">Deduction</small>
+              <small class="text-muted d-block">{{ lang.t('settlement_formula_deduction') }}</small>
               <span class="fw-bold text-warning">₹{{ settlement.deductionAmount | number }}</span>
             </div>
-            <div class="col-auto">
-              <span class="fs-4 text-muted">=</span>
-            </div>
+            <div class="col-auto"><span class="fs-4 text-muted">=</span></div>
             <div class="col">
-              <small class="text-muted d-block">Final Refund</small>
+              <small class="text-muted d-block">{{ lang.t('settlement_formula_refund') }}</small>
               <span class="fw-bold fs-5" [ngClass]="settlement.finalRefundAmount >= 0 ? 'text-success' : 'text-danger'">
                 ₹{{ settlement.finalRefundAmount | number }}
               </span>
@@ -122,7 +116,7 @@
           <div class="d-flex align-items-center justify-content-center">
             <i class="bi bi-wallet2 fs-2 me-3"></i>
             <div>
-              <small class="d-block text-uppercase fw-semibold opacity-75">Final Refund Amount</small>
+              <small class="d-block text-uppercase fw-semibold opacity-75">{{ lang.t('settlement_lbl_refund') }}</small>
               <span class="refund-amount">₹{{ settlement.finalRefundAmount | number }}</span>
             </div>
           </div>
@@ -132,7 +126,7 @@
         <div class="text-end mt-4">
           <button type="submit" class="btn btn-primary btn-lg px-5"
                   [disabled]="!settlementForm.valid || settlement.renterId === 0 || !settlement.leavingDate">
-            <i class="bi bi-check2-circle me-2"></i>Submit Settlement
+            <i class="bi bi-check2-circle me-2"></i>{{ lang.t('settlement_submit') }}
           </button>
         </div>
       </form>
@@ -143,7 +137,7 @@
   <div class="card shadow-sm">
     <div class="card-header bg-white border-bottom">
       <h5 class="mb-0 fw-bold">
-        <i class="bi bi-clock-history me-2 text-secondary"></i>Past Settlements
+        <i class="bi bi-clock-history me-2 text-secondary"></i>{{ lang.t('settlement_past') }}
       </h5>
     </div>
     <div class="card-body p-0">
@@ -151,20 +145,44 @@
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
             <tr>
-              <th>#</th>
-              <th>Renter Name</th>
-              <th>Flat No</th>
-              <th>Leaving Date</th>
-              <th>Deposit (₹)</th>
-              <th>Pending Rent (₹)</th>
-              <th>Deduction (₹)</th>
-              <th>Reason</th>
-              <th>Refund (₹)</th>
-              <th>Settlement Date</th>
+              <th>{{ lang.t('lbl_no') }}</th>
+              <th class="sortable-th" (click)="onSort('renterName')">
+                {{ lang.t('settlement_col_renter') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('renterName') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('flatNo')">
+                {{ lang.t('settlement_col_flat') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('flatNo') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('leavingDate')">
+                {{ lang.t('settlement_col_leaving') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('leavingDate') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('depositAmount')">
+                {{ lang.t('settlement_col_deposit') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('depositAmount') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('pendingRent')">
+                {{ lang.t('settlement_col_pending') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('pendingRent') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('deductionAmount')">
+                {{ lang.t('settlement_col_deduction') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('deductionAmount') }}"></i>
+              </th>
+              <th>{{ lang.t('settlement_col_reason') }}</th>
+              <th class="sortable-th" (click)="onSort('finalRefundAmount')">
+                {{ lang.t('settlement_col_refund') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('finalRefundAmount') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('settlementDate')">
+                {{ lang.t('settlement_col_date') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('settlementDate') }}"></i>
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let s of settlements; let i = index">
+            <tr *ngFor="let s of displayedSettlements; let i = index">
               <td>{{ i + 1 }}</td>
               <td class="fw-semibold">{{ s.renterName }}</td>
               <td><span class="badge bg-secondary">{{ s.flatNo }}</span></td>
@@ -180,10 +198,10 @@
               </td>
               <td>{{ s.settlementDate }}</td>
             </tr>
-            <tr *ngIf="settlements.length === 0">
+            <tr *ngIf="displayedSettlements.length === 0">
               <td colspan="10" class="text-center text-muted py-4">
                 <i class="bi bi-inbox fs-3 d-block mb-2"></i>
-                No settlements found
+                {{ lang.t('settlement_no_data') }}
               </td>
             </tr>
           </tbody>

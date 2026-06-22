@@ -2,9 +2,9 @@
   <!-- Page Title -->
   <div class="d-flex align-items-center justify-content-between mb-4">
     <h2 class="page-title mb-0">
-      <i class="bi bi-speedometer2 me-2"></i>Dashboard
+      <i class="bi bi-speedometer2 me-2"></i>{{ lang.t('dashboard_title') }}
     </h2>
-    <span class="text-muted small">Welcome back!</span>
+    <span class="text-muted small">{{ lang.t('lbl_welcome_back') }}</span>
   </div>
 
   <!-- Stat Cards -->
@@ -12,77 +12,63 @@
     <!-- Total Flats -->
     <div class="col-12 col-sm-6 col-lg-3">
       <div class="stat-card" style="background: #3b82f6;">
-        <div class="stat-icon">
-          <i class="bi bi-building"></i>
-        </div>
+        <div class="stat-icon"><i class="bi bi-building"></i></div>
         <div class="stat-value">{{ stats.totalFlats }}</div>
-        <div class="stat-label">Total Flats</div>
+        <div class="stat-label">{{ lang.t('dashboard_total_flats') }}</div>
       </div>
     </div>
 
     <!-- Occupied Flats -->
     <div class="col-12 col-sm-6 col-lg-3">
       <div class="stat-card" style="background: #22c55e;">
-        <div class="stat-icon">
-          <i class="bi bi-house-check"></i>
-        </div>
+        <div class="stat-icon"><i class="bi bi-house-check"></i></div>
         <div class="stat-value">{{ stats.occupiedFlats }}</div>
-        <div class="stat-label">Occupied Flats</div>
+        <div class="stat-label">{{ lang.t('dashboard_occupied_flats') }}</div>
       </div>
     </div>
 
     <!-- Vacant Flats -->
     <div class="col-12 col-sm-6 col-lg-3">
       <div class="stat-card" style="background: #f59e0b;">
-        <div class="stat-icon">
-          <i class="bi bi-house"></i>
-        </div>
+        <div class="stat-icon"><i class="bi bi-house"></i></div>
         <div class="stat-value">{{ stats.vacantFlats }}</div>
-        <div class="stat-label">Vacant Flats</div>
+        <div class="stat-label">{{ lang.t('dashboard_vacant_flats') }}</div>
       </div>
     </div>
 
     <!-- Current Month Rent -->
     <div class="col-12 col-sm-6 col-lg-3">
       <div class="stat-card" style="background: #8b5cf6;">
-        <div class="stat-icon">
-          <i class="bi bi-currency-rupee"></i>
-        </div>
+        <div class="stat-icon"><i class="bi bi-currency-rupee"></i></div>
         <div class="stat-value">{{ formatCurrency(stats.currentMonthRent) }}</div>
-        <div class="stat-label">Current Month Rent</div>
+        <div class="stat-label">{{ lang.t('dashboard_month_rent') }}</div>
       </div>
     </div>
 
     <!-- Collected Amount -->
     <div class="col-12 col-sm-6 col-lg-3">
       <div class="stat-card" style="background: #10b981;">
-        <div class="stat-icon">
-          <i class="bi bi-check-circle"></i>
-        </div>
+        <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
         <div class="stat-value">{{ formatCurrency(stats.collectedAmount) }}</div>
-        <div class="stat-label">Collected Amount</div>
+        <div class="stat-label">{{ lang.t('dashboard_collected') }}</div>
       </div>
     </div>
 
     <!-- Pending Amount -->
     <div class="col-12 col-sm-6 col-lg-3">
       <div class="stat-card" style="background: #ef4444;">
-        <div class="stat-icon">
-          <i class="bi bi-exclamation-circle"></i>
-        </div>
+        <div class="stat-icon"><i class="bi bi-exclamation-circle"></i></div>
         <div class="stat-value">{{ formatCurrency(stats.pendingAmount) }}</div>
-        <div class="stat-label">Pending Amount</div>
+        <div class="stat-label">{{ lang.t('dashboard_pending_amount') }}</div>
       </div>
     </div>
 
     <!-- Active Renters -->
     <div class="col-12 col-sm-6 col-lg-3">
       <div class="stat-card" style="background: #06b6d4;">
-        <div class="stat-icon">
-          <i class="bi bi-people"></i>
-        </div>
+        <div class="stat-icon"><i class="bi bi-people"></i></div>
         <div class="stat-value">{{ stats.totalActiveRenters }}</div>
-        <div class="stat-label">Active Renters</div>
+        <div class="stat-label">{{ lang.t('dashboard_active_renters') }}</div>
       </div>
     </div>
   </div>
@@ -94,21 +80,21 @@
       <div class="card table-card">
         <div class="card-header bg-white d-flex align-items-center justify-content-between">
           <h5 class="mb-0">
-            <i class="bi bi-clock-history me-2 text-primary"></i>Recent Payments
+            <i class="bi bi-clock-history me-2 text-primary"></i>{{ lang.t('dashboard_recent_payments') }}
           </h5>
-          <a routerLink="/rent-payment" class="btn btn-sm btn-outline-primary">View All</a>
+          <a routerLink="/payments" class="btn btn-sm btn-outline-primary">{{ lang.t('btn_view_all') }}</a>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-hover mb-0">
               <thead>
                 <tr>
-                  <th>Renter</th>
-                  <th>Flat</th>
-                  <th>Month</th>
-                  <th>Amount</th>
-                  <th>Mode</th>
-                  <th>Date</th>
+                  <th>{{ lang.t('payment_col_renter') }}</th>
+                  <th>{{ lang.t('payment_col_flat') }}</th>
+                  <th>{{ lang.t('payment_col_month') }}</th>
+                  <th>{{ lang.t('payment_col_amount') }}</th>
+                  <th>{{ lang.t('payment_col_mode') }}</th>
+                  <th>{{ lang.t('payment_col_date') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -126,13 +112,15 @@
                         'bg-primary-subtle text-primary': payment.paymentMode === 'Bank',
                         'bg-warning-subtle text-warning': payment.paymentMode === 'Cash'
                       }">
-                      {{ payment.paymentMode }}
+                      {{ payment.paymentMode === 'Cash' ? lang.t('mode_cash') :
+                         payment.paymentMode === 'UPI'  ? lang.t('mode_upi') :
+                         lang.t('mode_bank') }}
                     </span>
                   </td>
                   <td class="text-muted">{{ payment.paymentDate }}</td>
                 </tr>
                 <tr *ngIf="recentPayments.length === 0">
-                  <td colspan="6" class="text-center text-muted py-4">No recent payments</td>
+                  <td colspan="6" class="text-center text-muted py-4">{{ lang.t('dashboard_no_payments') }}</td>
                 </tr>
               </tbody>
             </table>
@@ -146,7 +134,7 @@
       <div class="card table-card">
         <div class="card-header bg-white d-flex align-items-center justify-content-between">
           <h5 class="mb-0">
-            <i class="bi bi-exclamation-triangle me-2 text-danger"></i>Pending Rents
+            <i class="bi bi-exclamation-triangle me-2 text-danger"></i>{{ lang.t('dashboard_pending_rents') }}
           </h5>
           <span class="badge bg-danger rounded-pill">{{ pendingRents.length }}</span>
         </div>
@@ -155,10 +143,10 @@
             <table class="table table-hover mb-0">
               <thead>
                 <tr>
-                  <th>Renter</th>
-                  <th>Flat</th>
-                  <th>Pending</th>
-                  <th>Status</th>
+                  <th>{{ lang.t('payment_col_renter') }}</th>
+                  <th>{{ lang.t('payment_col_flat') }}</th>
+                  <th>{{ lang.t('pending_col_pending') }}</th>
+                  <th>{{ lang.t('lbl_status') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -174,12 +162,12 @@
                         'bg-danger-subtle text-danger': rent.status === 'Pending',
                         'bg-warning-subtle text-warning': rent.status === 'Partial'
                       }">
-                      {{ rent.status }}
+                      {{ rent.status === 'Pending' ? lang.t('status_pending') : lang.t('status_partial') }}
                     </span>
                   </td>
                 </tr>
                 <tr *ngIf="pendingRents.length === 0">
-                  <td colspan="4" class="text-center text-muted py-4">No pending rents 🎉</td>
+                  <td colspan="4" class="text-center text-muted py-4">{{ lang.t('dashboard_no_pending') }}</td>
                 </tr>
               </tbody>
             </table>

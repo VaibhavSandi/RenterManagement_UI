@@ -131,3 +131,24 @@ textarea.form-control {
     width: 100%;
   }
 }
+
+@media (max-width: 575.98px) {
+  .page-title {
+    font-size: 1.15rem;
+  }
+  .card-body {
+    padding: 12px;
+  }
+  .btn-lg {
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+  }
+}
+
+@media (max-width: 359.98px) {
+  .form-control,
+  .form-select {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.6rem;
+  }
+}

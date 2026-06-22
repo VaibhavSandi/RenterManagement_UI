@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, HostListener, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { MockDataService } from '../../services/mock-data.service';
@@ -21,6 +22,8 @@ interface NavItem {
 })
 export class LayoutComponent implements OnInit, OnDestroy {
   sidebarOpen = true;
+  private isBrowser: boolean;
+  private readonly MOBILE_BREAKPOINT = 992;
   userDropdownOpen = false;
   currentLang = 'en';
   navItems: NavItem[] = [];
@@ -30,8 +33,27 @@ export class LayoutComponent implements OnInit, OnDestroy {
     private dataService: MockDataService,
     private router: Router,
     public lang: LanguageService,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+    if (this.isBrowser) {
+      this.sidebarOpen = window.innerWidth >= this.MOBILE_BREAKPOINT;
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(): void {
+    if (!this.isBrowser) return;
+    const isDesktop = window.innerWidth >= this.MOBILE_BREAKPOINT;
+    if (isDesktop && !this.sidebarOpen) {
+      this.sidebarOpen = true;
+      this.cdr.markForCheck();
+    } else if (!isDesktop && this.sidebarOpen) {
+      this.sidebarOpen = false;
+      this.cdr.markForCheck();
+    }
+  }
 
   ngOnInit(): void {
     this.buildNavItems();

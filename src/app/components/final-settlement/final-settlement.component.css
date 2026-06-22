@@ -134,3 +134,26 @@
     font-size: 1.75rem;
   }
 }
+
+@media (max-width: 575.98px) {
+  .page-title {
+    font-size: 1.15rem;
+  }
+  .card-body {
+    padding: 12px;
+  }
+  .refund-highlight .refund-amount {
+    font-size: 1.5rem;
+  }
+  .table thead th,
+  .table tbody td {
+    padding: 6px 8px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 359.98px) {
+  .formula-bar {
+    padding: 0.75rem;
+  }
+}

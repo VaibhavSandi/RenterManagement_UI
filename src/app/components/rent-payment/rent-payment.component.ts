@@ -1,11 +1,15 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Renter, RentPayment } from '../../models/interfaces';
+
 import { MockDataService } from '../../services/mock-data.service';
 import { LanguageService } from '../../services/language.service';
 import { SortConfig, sortArray, toggleSort, sortIcon } from '../../utils/table.utils';
 import { Subscription } from 'rxjs';
+import { RenterPaymentService } from '../../services/renter-payment.service';
+import { RentPayment } from '../../models/renterPayment.model';
+import { Renter } from '../../models/renter.model';
+import { RenterService } from '../../services/renter.service';
 
 @Component({
   selector: 'app-rent-payment',
@@ -47,12 +51,30 @@ export class RentPaymentComponent implements OnInit, OnDestroy {
 
   constructor(
     private dataService: MockDataService,
+    private renterservice:RenterPaymentService,
+    private renterService: RenterService,
     public lang: LanguageService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.activeRenters = this.dataService.getActiveRenters();
+    // this.activeRenters = this.dataService.getActiveRenters();
+    this.renterService.getAllRenters().subscribe({
+
+      next: (data) => {
+
+        this.activeRenters = data.filter(r => r.status === 'Active');
+        this.cdr.markForCheck();
+
+      },
+
+      error: (error) => {
+
+        console.error(error);
+
+      }
+
+    });
     this.loadPayments();
     this.langSub = this.lang.lang$.subscribe(() => this.cdr.markForCheck());
   }
@@ -61,15 +83,34 @@ export class RentPaymentComponent implements OnInit, OnDestroy {
     this.langSub?.unsubscribe();
   }
 
-  loadPayments(): void {
-    this.payments = this.dataService.getRentPayments().sort((a, b) =>
-      new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime()
-    );
-    this.cdr.markForCheck();
-  }
+ loadPayments(): void {
+
+  this.renterservice.getAllRentPayments()
+    .subscribe({
+
+      next: (data) => {
+
+        this.payments = data.sort((a, b) =>
+          new Date(b.paymentDate ?? '').getTime() -
+          new Date(a.paymentDate ?? '').getTime()
+        );
+
+        this.cdr.markForCheck();
+
+      },
+
+      error: (error) => {
+
+        console.error(error);
+
+      }
+
+    });
+
+}
 
   onRenterChange(): void {
-    const renter = this.activeRenters.find(r => r.id === +this.payment.renterId);
+    const renter = this.activeRenters.find(r => r.renterId === +this.payment.renterId);
     if (renter) {
       this.payment.renterName = renter.renterName;
       this.payment.flatNo = renter.flatNo;
@@ -79,7 +120,38 @@ export class RentPaymentComponent implements OnInit, OnDestroy {
   }
 
   submitPayment(): void {
-    this.dataService.addPayment(this.payment);
+
+const payload: RentPayment = {
+  renterId: +this.payment.renterId,
+  renterName: this.payment.renterName,
+  flatId: this.activeRenters.find(r => r.renterId === +this.payment.renterId)?.flatId!,
+  flatNo: this.payment.flatNo,
+  rentMonth: this.months.indexOf(this.payment.month) + 1,
+  rentYear: new Date().getFullYear(),
+  monthlyRent: this.payment.amountPaid,
+  amountPaid: this.payment.amountPaid,
+  paymentDate: this.payment.paymentDate,
+  paymentMode: this.payment.paymentMode,
+  remark: this.payment.remark
+};
+    this.renterservice.createRentPayment(payload).subscribe({
+
+      next: (data) => {
+
+        this.showSuccessMessage();
+
+      },
+
+      error: (error) => {
+
+        console.error(error);
+
+      }
+
+    });
+  }
+
+  showSuccessMessage(): void {
     this.showSuccess = true;
     this.payment = {
       renterId: 0, renterName: '', flatNo: '', month: '',
@@ -119,9 +191,10 @@ export class RentPaymentComponent implements OnInit, OnDestroy {
     if (this.filterSearch.trim()) {
       const q = this.filterSearch.trim().toLowerCase();
       result = result.filter(p =>
-        p.renterName.toLowerCase().includes(q) ||
-        p.flatNo.toLowerCase().includes(q) ||
-        p.month.toLowerCase().includes(q)
+        p.renterName!.toLowerCase().includes(q) ||
+        p.flatNo!.toLowerCase().includes(q) 
+        // ||
+        //  p.rentMonth!.toLowerCase().includes(q)
       );
     }
 

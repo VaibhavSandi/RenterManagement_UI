@@ -1,11 +1,13 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MockDataService } from '../../services/mock-data.service';
-import { PendingRent } from '../../models/interfaces';
+
 import { LanguageService } from '../../services/language.service';
 import { SortConfig, sortArray, toggleSort, sortIcon } from '../../utils/table.utils';
 import { Subscription } from 'rxjs';
+import { RenterPaymentService } from '../../services/renter-payment.service';
+import { PendingRent } from '../../models/interfaces';
+import { PendingRenters } from '../../models/PendingRenters.model';
 
 @Component({
   selector: 'app-pending-rent',
@@ -16,7 +18,7 @@ import { Subscription } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PendingRentComponent implements OnInit, OnDestroy {
-  pendingRents: PendingRent[] = [];
+  pendingRents: PendingRenters[] = [];
   totalPendingAmount = 0;
   totalPaidAmount = 0;
   totalDefaulters = 0;
@@ -31,16 +33,14 @@ export class PendingRentComponent implements OnInit, OnDestroy {
   private langSub!: Subscription;
 
   constructor(
-    private dataService: MockDataService,
+
     public lang: LanguageService,
+   private renterpayment: RenterPaymentService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.pendingRents = this.dataService.getPendingRents();
-    this.totalPendingAmount = this.pendingRents.reduce((sum, p) => sum + p.pendingAmount, 0);
-    this.totalPaidAmount = this.pendingRents.reduce((sum, p) => sum + p.paidAmount, 0);
-    this.totalDefaulters = this.pendingRents.length;
+    this.getPendingRentest();
     this.langSub = this.lang.lang$.subscribe(() => this.cdr.markForCheck());
   }
 
@@ -58,6 +58,23 @@ export class PendingRentComponent implements OnInit, OnDestroy {
     return sortIcon(this.sortConfig, column);
   }
 
+
+  getPendingRentest(): void {
+    this.renterpayment.getpendingRenter().subscribe({
+      next: (response) => {
+        this.pendingRents = response;
+        this.totalPendingAmount = this.pendingRents.reduce((sum, p) => sum + p.pendingAmount, 0);
+        this.totalPaidAmount = this.pendingRents.reduce((sum, p) => sum + p.paidAmount, 0);
+        this.totalDefaulters = this.pendingRents.length;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        alert(this.lang.t('pending_rent_err_load'));
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   resetFilters(): void {
     this.filterSearch = '';
     this.filterStatus = '';
@@ -69,7 +86,7 @@ export class PendingRentComponent implements OnInit, OnDestroy {
   }
 
   // ── Computed list ──────────────────────────────────────────────
-  get displayedRents(): PendingRent[] {
+  get displayedRents(): PendingRenters[] {
     let result = this.pendingRents;
 
     if (this.filterSearch.trim()) {

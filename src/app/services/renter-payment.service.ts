@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { RentPayment } from '../models/renterPayment.model';
+import { PendingRenters } from '../models/PendingRenters.model';
 
 @Injectable({
   providedIn: 'root'
@@ -22,13 +23,13 @@ export class RenterPaymentService {
   constructor(private http: HttpClient) {}
 
   getAllRentPayments(): Observable<RentPayment[]> {
-    return this.http.get<RentPayment[]>(this.apiUrl, {
+    return this.http.get<RentPayment[]>(`${this.apiUrl}/getAllPayments`, {
       headers: this.headers
     });
   }
 
   createRentPayment(payment: RentPayment): Observable<RentPayment> {
-    return this.http.post<RentPayment>(this.apiUrl, payment, {
+    return this.http.post<RentPayment>(`${this.apiUrl}/savePayment`, payment, {
       headers: this.headers
     });
   }
@@ -43,6 +44,12 @@ export class RenterPaymentService {
     return this.http.delete(`${this.apiUrl}/${id}`, {
       headers: this.headers,
       responseType: 'text'
+    });
+  }
+
+  getpendingRenter(): Observable<PendingRenters[]> {
+    return this.http.get<PendingRenters[]>(`http://localhost:8080/api/pending-rents`, {
+      headers: this.headers
     });
   }
 }

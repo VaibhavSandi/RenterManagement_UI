@@ -170,3 +170,33 @@
     padding: 4px 8px;
   }
 }
+
+@media (max-width: 575.98px) {
+  .page-title {
+    font-size: 1.15rem;
+  }
+  .btn-group-sm .btn {
+    min-width: 36px;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .table thead th,
+  .table tbody td {
+    padding: 6px 8px;
+    font-size: 0.8rem;
+  }
+  .modal-content {
+    margin: 0.5rem;
+    max-width: calc(100% - 1rem);
+  }
+}
+
+@media (max-width: 359.98px) {
+  .table thead th,
+  .table tbody td {
+    padding: 5px 6px;
+    font-size: 0.75rem;
+  }
+}

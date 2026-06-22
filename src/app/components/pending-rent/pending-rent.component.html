@@ -88,7 +88,7 @@
                 {{ lang.t('pending_col_month') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('month') }}"></i>
               </th>
-              <th class="text-end sortable-th" (click)="onSort('monthlyRent')">
+              <th class="text-end sortable-th d-none d-md-table-cell" (click)="onSort('monthlyRent')">
                 {{ lang.t('pending_col_monthly_rent') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('monthlyRent') }}"></i>
               </th>
@@ -100,7 +100,7 @@
                 {{ lang.t('pending_col_pending') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('pendingAmount') }}"></i>
               </th>
-              <th class="sortable-th" (click)="onSort('dueDate')">
+              <th class="sortable-th d-none d-md-table-cell" (click)="onSort('dueDate')">
                 {{ lang.t('pending_col_due') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('dueDate') }}"></i>
               </th>
@@ -124,14 +124,14 @@
                 <i class="bi bi-calendar3 text-muted me-1"></i>
                 {{ item.month }}
               </td>
-              <td class="text-end">{{ item.monthlyRent | number }}</td>
+              <td class="text-end d-none d-md-table-cell">{{ item.monthlyRent | number }}</td>
               <td class="text-end">
                 <span [ngClass]="item.paidAmount > 0 ? 'text-success fw-semibold' : 'text-muted'">
                   {{ item.paidAmount | number }}
                 </span>
               </td>
               <td class="text-end fw-bold text-danger">{{ item.pendingAmount | number }}</td>
-              <td>{{ item.dueDate | date: 'dd MMM yyyy' }}</td>
+              <td class="d-none d-md-table-cell">{{ item.dueDate | date: 'dd MMM yyyy' }}</td>
               <td class="text-center">
                 <span class="badge rounded-pill"
                   [ngClass]="{
@@ -155,10 +155,11 @@
           <tfoot class="table-light">
             <tr class="fw-bold">
               <td class="ps-3" colspan="4">{{ lang.t('lbl_total') }}</td>
-              <td class="text-end">—</td>
+              <td class="text-end d-none d-md-table-cell">—</td>
               <td class="text-end text-success">₹{{ filteredTotalPaid | number }}</td>
               <td class="text-end text-danger">₹{{ filteredTotalPending | number }}</td>
-              <td colspan="2"></td>
+              <td class="d-none d-md-table-cell"></td>
+              <td></td>
             </tr>
           </tfoot>
         </table>

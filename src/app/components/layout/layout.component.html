@@ -1,7 +1,8 @@
 <div class="layout-container" [class.sidebar-open]="sidebarOpen">
-  <!-- Sidebar Backdrop (mobile only) -->
+  <!-- Sidebar Backdrop (tablet & mobile) -->
   <div
-    class="sidebar-backdrop d-lg-none"
+    class="sidebar-backdrop"
+    [class.d-none]="!sidebarOpen"
     *ngIf="sidebarOpen"
     (click)="onBackdropClick()"
   ></div>
@@ -19,7 +20,7 @@
           <small class="text-white-50" style="font-size: 0.7rem;">Manager</small>
         </div>
       </div>
-      <button class="btn btn-link text-white-50 d-lg-none p-0" (click)="toggleSidebar()">
+      <button class="btn btn-link text-white-50 p-0 sidebar-close-btn" (click)="toggleSidebar()" aria-label="Close sidebar">
         <i class="bi bi-x-lg"></i>
       </button>
     </div>
@@ -61,7 +62,7 @@
       <div class="d-flex align-items-center justify-content-between w-100">
         <!-- Left: Hamburger -->
         <div class="d-flex align-items-center">
-          <button class="btn btn-link text-dark p-0 me-3 hamburger-btn" (click)="toggleSidebar()">
+          <button class="btn btn-link text-dark p-0 me-3 hamburger-btn" (click)="toggleSidebar()" aria-label="Toggle sidebar">
             <i class="bi bi-list fs-4"></i>
           </button>
           <h5 class="mb-0 fw-semibold text-dark d-none d-md-block">Family Rent Manager</h5>

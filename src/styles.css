@@ -1094,9 +1094,53 @@ textarea.form-control {
 }
 
 /* ══════════════════════════════════════════════════
-   Responsive
+   Responsive — Multi-Device Support
+   PC (1200+), Laptop (992–1199), Tablet (768–991),
+   Mobile (576–767), Small Mobile (0–575)
    ══════════════════════════════════════════════════ */
-@media (max-width: 768px) {
+
+/* ── Tablet Landscape / Laptop (< 1200px) ────────── */
+@media (max-width: 1199.98px) {
+  .modal-container, .modal-content {
+    max-width: 560px;
+  }
+}
+
+/* ── Tablet Portrait (< 992px) ───────────────────── */
+@media (max-width: 991.98px) {
+  .page-header {
+    gap: 10px;
+  }
+
+  .page-title {
+    font-size: 1.35rem;
+  }
+
+  .card-header {
+    padding: 14px 16px;
+  }
+
+  .card-body {
+    padding: 16px;
+  }
+
+  .modal-container, .modal-content {
+    max-width: 90vw;
+    margin: 1rem auto;
+  }
+
+  .stat-card {
+    min-height: 110px;
+    padding: 18px;
+  }
+
+  .filter-bar-inner {
+    padding: 10px 14px;
+  }
+}
+
+/* ── Mobile Landscape (< 768px) ──────────────────── */
+@media (max-width: 767.98px) {
   .page-header {
     flex-direction: column;
     align-items: flex-start;
@@ -1132,9 +1176,111 @@ textarea.form-control {
   .stat-value {
     font-size: 1.3rem;
   }
+
+  .stat-icon {
+    font-size: 1.5rem;
+  }
+
+  .modal-container, .modal-content {
+    max-width: 95vw;
+    margin: 0.75rem auto;
+    border-radius: var(--radius-lg);
+  }
+
+  .modal-header {
+    padding: 16px 20px;
+  }
+
+  .modal-body {
+    padding: 16px 20px;
+  }
+
+  .modal-footer {
+    padding: 12px 20px;
+  }
+
+  .card-header {
+    padding: 12px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .card-body {
+    padding: 14px;
+  }
+
+  .btn {
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+
+  .btn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .btn-lg {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  /* Touch-friendly action buttons */
+  .btn-icon-only {
+    min-width: 38px;
+    min-height: 38px;
+    padding: 6px;
+  }
+
+  .icon-circle {
+    width: 48px;
+    height: 48px;
+    font-size: 1.2rem;
+  }
+
+  .empty-state {
+    padding: 32px 16px;
+  }
+
+  .empty-state i {
+    font-size: 2.5rem;
+  }
+
+  .info-pill {
+    font-size: 11.5px;
+    padding: 5px 10px;
+  }
+
+  .lang-toggle-btn {
+    padding: 5px 12px;
+    font-size: 12px;
+  }
+
+  .report-card:hover {
+    transform: translateY(-2px);
+  }
 }
 
-@media (max-width: 480px) {
+/* ── Mobile Portrait (< 576px) ───────────────────── */
+@media (max-width: 575.98px) {
+  .page-title {
+    font-size: 1.15rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .table thead th {
+    font-size: 9.5px;
+    padding: 8px 8px;
+    letter-spacing: 0.4px;
+  }
+
+  .table tbody td {
+    font-size: 12px;
+    padding: 8px 8px;
+  }
+
   .filter-bar-inner {
     flex-direction: column;
     gap: 8px;
@@ -1150,4 +1296,164 @@ textarea.form-control {
     margin-left: 0;
     text-align: center;
   }
+
+  .form-control, .form-select {
+    font-size: 13px;
+    padding: 9px 12px;
+  }
+
+  .form-label {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .modal-container, .modal-content {
+    max-width: calc(100vw - 1rem);
+    margin: 0.5rem;
+    max-height: 95vh;
+  }
+
+  .modal-header h5, .modal-title {
+    font-size: 1rem;
+  }
+
+  .stat-card {
+    min-height: 90px;
+    padding: 14px;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+
+  .stat-icon {
+    font-size: 1.3rem;
+    margin-bottom: 4px;
+  }
+
+  .badge {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .status-badge {
+    font-size: 10.5px;
+    padding: 4px 10px;
+  }
+
+  .status-badge::before {
+    width: 6px;
+    height: 6px;
+  }
+
+  .card-header h5, .card-header-title {
+    font-size: 13.5px;
+  }
+
+  /* Touch-friendly buttons */
+  .btn-group .btn {
+    min-height: 36px;
+    min-width: 36px;
+  }
+
+  .action-btn {
+    min-height: 40px;
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+
+  .empty-state {
+    padding: 24px 12px;
+  }
+
+  .empty-state i {
+    font-size: 2rem;
+    margin-bottom: 8px;
+  }
+
+  .empty-state h5 {
+    font-size: 0.9rem;
+  }
+
+  .empty-state p {
+    font-size: 12px;
+  }
+
+  .detail-label {
+    font-size: 10.5px;
+  }
+
+  .detail-value {
+    font-size: 13px;
+  }
 }
+
+/* ── Ultra-small Mobile (< 360px) ────────────────── */
+@media (max-width: 359.98px) {
+  body {
+    font-size: 13px;
+  }
+
+  .page-title {
+    font-size: 1.05rem;
+  }
+
+  .table thead th {
+    font-size: 9px;
+    padding: 6px 5px;
+  }
+
+  .table tbody td {
+    font-size: 11px;
+    padding: 6px 5px;
+  }
+
+  .form-control, .form-select {
+    font-size: 12.5px;
+    padding: 8px 10px;
+  }
+
+  .btn {
+    font-size: 12px;
+    padding: 7px 12px;
+  }
+
+  .btn-sm {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .stat-card {
+    min-height: 80px;
+    padding: 12px;
+  }
+
+  .stat-value {
+    font-size: 1.1rem;
+  }
+
+  .stat-icon {
+    font-size: 1.1rem;
+  }
+
+  .card-body {
+    padding: 10px;
+  }
+
+  .card-header {
+    padding: 10px 12px;
+  }
+
+  .modal-body {
+    padding: 12px;
+  }
+
+  .modal-footer {
+    padding: 10px 12px;
+  }
+}
+

@@ -184,3 +184,23 @@
     gap: 0.5rem !important;
   }
 }
+
+@media (max-width: 767.98px) {
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+  .modal-content {
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 359.98px) {
+  .table thead th,
+  .table tbody td {
+    padding: 6px 8px;
+    font-size: 0.78rem;
+  }
+  .page-title {
+    font-size: 1.1rem;
+  }
+}

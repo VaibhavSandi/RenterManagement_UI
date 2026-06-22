@@ -19,5 +19,5 @@ export interface RentPayment {
   paymentMode?: string;
   remark?: string;
 
-  paymentDate?: string;
+  paymentDate?:  string;
 }

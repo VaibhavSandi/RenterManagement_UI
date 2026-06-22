@@ -29,7 +29,7 @@
             <select class="form-select" [(ngModel)]="payment.renterId"
               name="renterId" required (ngModelChange)="onRenterChange()">
               <option [ngValue]="0" disabled>{{ lang.t('payment_ph_renter') }}</option>
-              <option *ngFor="let renter of activeRenters" [ngValue]="renter.id">
+              <option *ngFor="let renter of activeRenters" [ngValue]="renter.renterId">
                 {{ renter.renterName }} ({{ renter.flatNo }})
               </option>
             </select>
@@ -135,8 +135,8 @@
                 {{ lang.t('payment_col_date') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('paymentDate') }}"></i>
               </th>
-              <th>{{ lang.t('payment_col_mode') }}</th>
-              <th>{{ lang.t('payment_col_remark') }}</th>
+              <th class="d-none d-md-table-cell">{{ lang.t('payment_col_mode') }}</th>
+              <th class="d-none d-md-table-cell">{{ lang.t('payment_col_remark') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -144,10 +144,10 @@
               <td class="text-muted fw-semibold">{{ i + 1 }}</td>
               <td class="fw-semibold">{{ p.renterName }}</td>
               <td><span class="info-pill info-pill-primary">{{ p.flatNo }}</span></td>
-              <td>{{ p.month }}</td>
+              <td>{{ p.rentMonth }}</td>
               <td class="text-success fw-bold">₹{{ p.amountPaid | number }}</td>
               <td>{{ p.paymentDate }}</td>
-              <td>
+              <td class="d-none d-md-table-cell">
                 <span class="status-badge"
                   [ngClass]="{
                     'status-active': p.paymentMode === 'UPI',
@@ -159,7 +159,7 @@
                      lang.t('mode_bank') }}
                 </span>
               </td>
-              <td class="text-muted">{{ p.remark || '—' }}</td>
+              <td class="text-muted d-none d-md-table-cell">{{ p.remark || '—' }}</td>
             </tr>
             <tr *ngIf="displayedPayments.length === 0">
               <td colspan="8" class="text-center py-5">

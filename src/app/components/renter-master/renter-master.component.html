@@ -48,7 +48,7 @@
                 {{ lang.t('renter_col_name') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('renterName') }}"></i>
               </th>
-              <th class="sortable-th" (click)="onSort('mobileNumber')">
+              <th class="sortable-th d-none d-md-table-cell" (click)="onSort('mobileNumber')">
                 {{ lang.t('renter_col_mobile') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('mobileNumber') }}"></i>
               </th>
@@ -60,7 +60,7 @@
                 {{ lang.t('renter_col_rent') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('monthlyRent') }}"></i>
               </th>
-              <th class="sortable-th" (click)="onSort('depositPaid')">
+              <th class="sortable-th d-none d-md-table-cell" (click)="onSort('depositPaid')">
                 {{ lang.t('renter_col_deposit') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('depositPaid') }}"></i>
               </th>
@@ -75,10 +75,10 @@
             <tr *ngFor="let renter of displayedRenters; let i = index">
               <td>{{ i + 1 }}</td>
               <td class="fw-semibold">{{ renter.renterName }}</td>
-              <td>{{ renter.mobileNumber }}</td>
+              <td class="d-none d-md-table-cell">{{ renter.mobileNumber }}</td>
               <td>{{ renter.flatNo }}</td>
               <td>₹{{ renter.monthlyRent | number }}</td>
-              <td>₹{{ renter.depositPaid | number }}</td>
+              <td class="d-none d-md-table-cell">₹{{ renter.depositPaid | number }}</td>
               <td>
                 <span class="badge"
                   [ngClass]="renter.status === 'Active' ? 'bg-success' : 'bg-danger'">

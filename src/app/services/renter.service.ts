@@ -44,4 +44,12 @@ export class RenterService {
       responseType: 'text'
     });
   }
+
+  ActivateRenter(): Observable<string> {
+    return this.http.put(`${this.apiUrl}/activaterenter`, null, {headers: this.headers,
+      responseType: 'text'
+    });
+  }
+
+  
 }

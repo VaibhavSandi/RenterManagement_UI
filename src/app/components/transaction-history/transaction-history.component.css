@@ -117,3 +117,32 @@
     font-size: 1.3rem;
   }
 }
+
+@media (max-width: 767.98px) {
+  .search-dropdown {
+    max-height: 250px;
+  }
+  .summary-card .card-body {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .page-title {
+    font-size: 1.15rem;
+  }
+  .detail-item {
+    padding: 6px 0;
+  }
+  .detail-label {
+    font-size: 0.65rem;
+  }
+  .detail-value {
+    font-size: 0.85rem;
+  }
+  .table thead th,
+  .table tbody td {
+    padding: 6px 8px;
+    font-size: 0.8rem;
+  }
+}

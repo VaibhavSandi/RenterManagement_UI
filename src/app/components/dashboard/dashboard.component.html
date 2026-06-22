@@ -93,7 +93,7 @@
                   <th>{{ lang.t('payment_col_flat') }}</th>
                   <th>{{ lang.t('payment_col_month') }}</th>
                   <th>{{ lang.t('payment_col_amount') }}</th>
-                  <th>{{ lang.t('payment_col_mode') }}</th>
+                  <th class="d-none d-md-table-cell">{{ lang.t('payment_col_mode') }}</th>
                   <th>{{ lang.t('payment_col_date') }}</th>
                 </tr>
               </thead>
@@ -105,7 +105,7 @@
                   </td>
                   <td>{{ payment.month }}</td>
                   <td class="fw-semibold text-success">{{ formatCurrency(payment.amountPaid) }}</td>
-                  <td>
+                  <td class="d-none d-md-table-cell">
                     <span class="badge"
                       [ngClass]="{
                         'bg-info-subtle text-info': payment.paymentMode === 'UPI',

@@ -154,7 +154,7 @@
                 {{ lang.t('settlement_col_flat') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('flatNo') }}"></i>
               </th>
-              <th class="sortable-th" (click)="onSort('leavingDate')">
+              <th class="sortable-th d-none d-md-table-cell" (click)="onSort('leavingDate')">
                 {{ lang.t('settlement_col_leaving') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('leavingDate') }}"></i>
               </th>
@@ -170,12 +170,12 @@
                 {{ lang.t('settlement_col_deduction') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('deductionAmount') }}"></i>
               </th>
-              <th>{{ lang.t('settlement_col_reason') }}</th>
+              <th class="d-none d-md-table-cell">{{ lang.t('settlement_col_reason') }}</th>
               <th class="sortable-th" (click)="onSort('finalRefundAmount')">
                 {{ lang.t('settlement_col_refund') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('finalRefundAmount') }}"></i>
               </th>
-              <th class="sortable-th" (click)="onSort('settlementDate')">
+              <th class="sortable-th d-none d-md-table-cell" (click)="onSort('settlementDate')">
                 {{ lang.t('settlement_col_date') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('settlementDate') }}"></i>
               </th>
@@ -186,17 +186,17 @@
               <td>{{ i + 1 }}</td>
               <td class="fw-semibold">{{ s.renterName }}</td>
               <td><span class="badge bg-secondary">{{ s.flatNo }}</span></td>
-              <td>{{ s.leavingDate }}</td>
+              <td class="d-none d-md-table-cell">{{ s.leavingDate }}</td>
               <td>{{ s.depositAmount | number }}</td>
               <td class="text-danger">{{ s.pendingRent | number }}</td>
               <td class="text-warning">{{ s.deductionAmount | number }}</td>
-              <td>{{ s.deductionReason || '—' }}</td>
+              <td class="d-none d-md-table-cell">{{ s.deductionReason || '—' }}</td>
               <td>
                 <span class="badge rounded-pill" [ngClass]="s.finalRefundAmount >= 0 ? 'bg-success' : 'bg-danger'">
                   ₹{{ s.finalRefundAmount | number }}
                 </span>
               </td>
-              <td>{{ s.settlementDate }}</td>
+              <td class="d-none d-md-table-cell">{{ s.settlementDate }}</td>
             </tr>
             <tr *ngIf="displayedSettlements.length === 0">
               <td colspan="10" class="text-center text-muted py-4">

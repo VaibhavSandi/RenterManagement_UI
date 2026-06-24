@@ -204,6 +204,13 @@ export class MockDataService {
     return newPayment;
   }
 
+  getRentPaymentsSorted(renterId: number): RentPayment[] {
+    return this.rentPayments
+      .filter(p => p.renterId === renterId)
+      .sort((a, b) => a.paymentDate.localeCompare(b.paymentDate));
+  }
+
+
   // ────────── PENDING RENTS ──────────
   getPendingRents(): PendingRent[] {
     return [...this.pendingRents];

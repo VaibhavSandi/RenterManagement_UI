@@ -60,6 +60,18 @@ export interface Settlement {
   settlementDate: string;
 }
 
+export interface MonthlyLedgerEntry {
+  month: string;           // e.g. "January 2024"
+  monthKey: string;        // YYYY-MM for sorting
+  expectedRent: number;
+  amountPaid: number;
+  pendingAmount: number;
+  status: 'Paid' | 'Partial' | 'Unpaid';
+  paymentDate?: string;
+  paymentMode?: string;
+  remark?: string;
+}
+
 export interface DashboardStats {
   totalFlats: number;
   occupiedFlats: number;

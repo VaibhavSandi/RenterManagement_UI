@@ -1,44 +1,295 @@
 <div class="container-fluid py-4">
-  <!-- Page Title -->
+
+  <!-- ══════════════════════════════════════════════════════
+       Page Header
+  ══════════════════════════════════════════════════════════ -->
   <div class="d-flex align-items-center mb-4">
     <i class="bi bi-receipt-cutoff fs-3 text-primary me-2"></i>
-    <h2 class="mb-0 fw-bold">{{ lang.t('settlement_title') }}</h2>
+    <div>
+      <h2 class="mb-0 fw-bold">{{ lang.t('settlement_title') }}</h2>
+      <small class="text-muted">Manage renter exit, review payment history &amp; process refunds</small>
+    </div>
   </div>
 
-  <!-- Success Alert -->
-  <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" *ngIf="showSuccess" role="alert">
+  <!-- ══════════════════════════════════════════════════════
+       Success Alert
+  ══════════════════════════════════════════════════════════ -->
+  <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4"
+       *ngIf="showSuccess" role="alert">
     <i class="bi bi-check-circle-fill me-2 fs-5"></i>
     <strong>{{ lang.t('settlement_success') }}</strong>
-    <button type="button" class="btn-close" (click)="showSuccess = false"></button>
+    <button type="button" class="btn-close ms-auto" (click)="showSuccess = false"></button>
   </div>
 
-  <!-- Settlement Form Card -->
-  <div class="card settlement-card shadow-sm mb-4">
-    <div class="card-header bg-primary text-white">
-      <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>{{ lang.t('settlement_calculator') }}</h5>
+  <!-- ══════════════════════════════════════════════════════
+       Step Indicators
+  ══════════════════════════════════════════════════════════ -->
+  <div class="step-indicator mb-4">
+    <div class="step" [class.active]="true" [class.completed]="!!selectedRenter">
+      <div class="step-circle">
+        <i class="bi" [class.bi-check-lg]="!!selectedRenter" [class.bi-person]="!selectedRenter"></i>
+      </div>
+      <span class="step-label">{{ lang.t('settlement_step1') }}</span>
+    </div>
+    <div class="step-line" [class.active]="!!selectedRenter"></div>
+    <div class="step" [class.active]="!!selectedRenter" [class.completed]="showSettlementForm && !!selectedRenter">
+      <div class="step-circle">
+        <i class="bi" [class.bi-check-lg]="showSettlementForm && !!selectedRenter" [class.bi-list-check]="!showSettlementForm || !selectedRenter"></i>
+      </div>
+      <span class="step-label">{{ lang.t('settlement_step2') }}</span>
+    </div>
+    <div class="step-line" [class.active]="showSettlementForm && !!selectedRenter"></div>
+    <div class="step" [class.active]="showSettlementForm && !!selectedRenter">
+      <div class="step-circle">
+        <i class="bi bi-cash-coin"></i>
+      </div>
+      <span class="step-label">{{ lang.t('settlement_step3') }}</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       PHASE 1: Select Renter Card
+  ══════════════════════════════════════════════════════════ -->
+  <div class="card phase-card shadow-sm mb-4">
+    <div class="card-header phase-header-1">
+      <h5 class="mb-0 fw-bold">
+        <span class="phase-badge me-2">1</span>
+        <i class="bi bi-person-check me-2"></i>{{ lang.t('settlement_step1') }}
+      </h5>
+    </div>
+    <div class="card-body p-4">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-6">
+          <label for="renter" class="form-label fw-semibold">
+            <i class="bi bi-person me-1"></i>{{ lang.t('settlement_lbl_renter') }}
+          </label>
+          <select class="form-select form-select-lg" id="renter" name="renterId"
+                  [(ngModel)]="settlement.renterId"
+                  (ngModelChange)="onRenterChange()" required>
+            <option [value]="0" disabled>{{ lang.t('settlement_ph_renter') }}</option>
+            <option *ngFor="let renter of activeRenters" [value]="renter.id">
+              {{ renter.renterName }} — {{ renter.flatNo }} ({{ renter.buildingName }})
+            </option>
+          </select>
+        </div>
+
+        <!-- Renter Quick Info -->
+        <div class="col-md-6" *ngIf="selectedRenter">
+          <div class="renter-info-strip">
+            <div class="info-chip">
+              <i class="bi bi-building"></i>
+              <span>{{ selectedRenter.flatNo }}, {{ selectedRenter.buildingName }}</span>
+            </div>
+            <div class="info-chip">
+              <i class="bi bi-calendar-event"></i>
+              <span>Joined: {{ selectedRenter.joiningDate }}</span>
+            </div>
+            <div class="info-chip">
+              <i class="bi bi-currency-rupee"></i>
+              <span>₹{{ selectedRenter.monthlyRent | number }}/mo</span>
+            </div>
+            <div class="info-chip">
+              <i class="bi bi-clock"></i>
+              <span>{{ monthsStayed }} {{ lang.t('settlement_months') }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prompt when no renter selected -->
+        <div class="col-12" *ngIf="!selectedRenter">
+          <div class="select-prompt">
+            <i class="bi bi-arrow-up-circle fs-4 me-2 text-primary"></i>
+            <span>{{ lang.t('settlement_select_renter_prompt') }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       PHASE 2: Transaction History Ledger
+  ══════════════════════════════════════════════════════════ -->
+  <div class="card phase-card shadow-sm mb-4" *ngIf="selectedRenter">
+    <div class="card-header phase-header-2">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h5 class="mb-0 fw-bold">
+          <span class="phase-badge me-2">2</span>
+          <i class="bi bi-list-check me-2"></i>{{ lang.t('settlement_txn_history') }}
+        </h5>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge rounded-pill" style="font-size:0.8rem"
+                [class.bg-success]="isAllClear" [class.bg-warning]="!isAllClear"
+                [class.text-dark]="!isAllClear">
+            {{ monthsStayed }} {{ lang.t('settlement_months') }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+
+      <!-- All Clear / Discrepancy Banner -->
+      <div class="status-banner" [class.banner-clear]="isAllClear" [class.banner-warn]="!isAllClear">
+        <i class="bi fs-5 me-2"
+           [class.bi-check-circle-fill]="isAllClear"
+           [class.bi-exclamation-triangle-fill]="!isAllClear"></i>
+        <strong>{{ isAllClear ? lang.t('settlement_all_clear') : lang.t('settlement_discrepancy') }}</strong>
+      </div>
+
+      <!-- Page size selector -->
+      <div class="table-toolbar px-3 pt-3 pb-2">
+        <div class="d-flex align-items-center gap-2">
+          <label class="small text-muted mb-0">{{ lang.t('pagination_rows') }}:</label>
+          <select class="form-select form-select-sm w-auto"
+                  [(ngModel)]="ledgerPageSize" (ngModelChange)="onLedgerPageSizeChange()">
+            <option [value]="5">5</option>
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+          </select>
+        </div>
+        <small class="text-muted">
+          {{ lang.t('pagination_showing') }} {{ ledgerStartEntry }}–{{ ledgerEndEntry }}
+          {{ lang.t('pagination_of') }} {{ transactionLedger.length }} {{ lang.t('pagination_entries') }}
+        </small>
+      </div>
+
+      <!-- Ledger Table -->
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 ledger-table">
+          <thead class="table-dark">
+            <tr>
+              <th>{{ lang.t('lbl_no') }}</th>
+              <th class="sortable-th" (click)="onLedgerSort('month')">
+                {{ lang.t('settlement_col_month') }}
+                <i class="bi ms-1 sort-icon {{ ledgerSortIcon('month') }}"></i>
+              </th>
+              <th class="sortable-th text-end" (click)="onLedgerSort('expectedRent')">
+                {{ lang.t('settlement_col_expected') }}
+                <i class="bi ms-1 sort-icon {{ ledgerSortIcon('expectedRent') }}"></i>
+              </th>
+              <th class="sortable-th text-end" (click)="onLedgerSort('amountPaid')">
+                {{ lang.t('settlement_col_paid_amt') }}
+                <i class="bi ms-1 sort-icon {{ ledgerSortIcon('amountPaid') }}"></i>
+              </th>
+              <th class="sortable-th text-end" (click)="onLedgerSort('pendingAmount')">
+                {{ lang.t('settlement_col_pending_amt') }}
+                <i class="bi ms-1 sort-icon {{ ledgerSortIcon('pendingAmount') }}"></i>
+              </th>
+              <th class="d-none d-md-table-cell">{{ lang.t('settlement_col_pay_date') }}</th>
+              <th class="d-none d-md-table-cell">{{ lang.t('settlement_col_pay_mode') }}</th>
+              <th class="text-center">{{ lang.t('settlement_col_status') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of pagedLedger; let i = index"
+                [class.row-paid]="entry.status === 'Paid'"
+                [class.row-partial]="entry.status === 'Partial'"
+                [class.row-unpaid]="entry.status === 'Unpaid'">
+              <td class="text-muted">{{ (ledgerPage - 1) * ledgerPageSize + i + 1 }}</td>
+              <td class="fw-semibold">{{ entry.month }}</td>
+              <td class="text-end fw-semibold">₹{{ entry.expectedRent | number }}</td>
+              <td class="text-end text-success fw-semibold">
+                {{ entry.amountPaid > 0 ? '₹' + (entry.amountPaid | number) : '—' }}
+              </td>
+              <td class="text-end">
+                <span *ngIf="entry.pendingAmount > 0" class="text-danger fw-bold">
+                  ₹{{ entry.pendingAmount | number }}
+                </span>
+                <span *ngIf="entry.pendingAmount === 0" class="text-success">—</span>
+              </td>
+              <td class="d-none d-md-table-cell text-muted small">
+                {{ entry.paymentDate || '—' }}
+              </td>
+              <td class="d-none d-md-table-cell text-muted small">
+                {{ entry.paymentMode || '—' }}
+              </td>
+              <td class="text-center">
+                <span class="badge status-badge"
+                      [class.bg-success]="entry.status === 'Paid'"
+                      [class.bg-warning]="entry.status === 'Partial'"
+                      [class.text-dark]="entry.status === 'Partial'"
+                      [class.bg-danger]="entry.status === 'Unpaid'">
+                  <i class="bi me-1"
+                     [class.bi-check-circle]="entry.status === 'Paid'"
+                     [class.bi-dash-circle]="entry.status === 'Partial'"
+                     [class.bi-x-circle]="entry.status === 'Unpaid'"></i>
+                  {{ entry.status === 'Paid' ? lang.t('settlement_paid_status') :
+                     entry.status === 'Partial' ? lang.t('settlement_partial_status') :
+                     lang.t('settlement_unpaid_status') }}
+                </span>
+              </td>
+            </tr>
+
+            <!-- Empty state -->
+            <tr *ngIf="transactionLedger.length === 0">
+              <td colspan="8" class="text-center text-muted py-4">
+                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                {{ lang.t('settlement_no_txn') }}
+              </td>
+            </tr>
+          </tbody>
+
+          <!-- Totals Footer -->
+          <tfoot *ngIf="transactionLedger.length > 0">
+            <tr class="totals-row">
+              <td colspan="2" class="fw-bold text-uppercase small">
+                {{ lang.t('lbl_total') }} ({{ monthsStayed }} {{ lang.t('settlement_months') }})
+              </td>
+              <td class="text-end fw-bold">₹{{ totalExpected | number }}</td>
+              <td class="text-end fw-bold text-success">₹{{ totalPaid | number }}</td>
+              <td class="text-end fw-bold text-danger">₹{{ totalPending | number }}</td>
+              <td class="d-none d-md-table-cell" colspan="3"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Ledger Pagination -->
+      <div class="pagination-bar px-3 py-2" *ngIf="transactionLedger.length > 0">
+        <small class="text-muted">
+          {{ lang.t('pagination_page') }} {{ ledgerPage }} {{ lang.t('pagination_of') }} {{ totalLedgerPages }}
+        </small>
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" [class.disabled]="ledgerPage === 1">
+              <button class="page-link" (click)="prevLedgerPage()">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+            </li>
+            <li class="page-item" *ngFor="let p of getLedgerPages()"
+                [class.active]="p === ledgerPage">
+              <button class="page-link" (click)="goToLedgerPage(p)">{{ p }}</button>
+            </li>
+            <li class="page-item" [class.disabled]="ledgerPage === totalLedgerPages">
+              <button class="page-link" (click)="nextLedgerPage()">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       PHASE 3: Settlement Form
+  ══════════════════════════════════════════════════════════ -->
+  <div class="card phase-card shadow-sm mb-4" *ngIf="showSettlementForm && selectedRenter">
+    <div class="card-header phase-header-3">
+      <h5 class="mb-0 fw-bold">
+        <span class="phase-badge me-2">3</span>
+        <i class="bi bi-calculator me-2"></i>{{ lang.t('settlement_form_title') }}
+      </h5>
     </div>
     <div class="card-body p-4">
       <form #settlementForm="ngForm" (ngSubmit)="submitSettlement()">
         <div class="row g-3">
-          <!-- Select Renter -->
-          <div class="col-md-6">
-            <label for="renter" class="form-label fw-semibold">
-              <i class="bi bi-person me-1"></i>{{ lang.t('settlement_lbl_renter') }}
-            </label>
-            <select class="form-select" id="renter" name="renterId"
-                    [(ngModel)]="settlement.renterId"
-                    (ngModelChange)="onRenterChange()" required>
-              <option [value]="0" disabled>{{ lang.t('settlement_ph_renter') }}</option>
-              <option *ngFor="let renter of activeRenters" [value]="renter.id">
-                {{ renter.renterName }} ({{ renter.flatNo }})
-              </option>
-            </select>
-          </div>
 
           <!-- Leaving Date -->
           <div class="col-md-6">
             <label for="leavingDate" class="form-label fw-semibold">
-              <i class="bi bi-calendar-event me-1"></i>{{ lang.t('settlement_lbl_leaving') }}
+              <i class="bi bi-calendar-x me-1 text-danger"></i>{{ lang.t('settlement_lbl_leaving') }}
             </label>
             <input type="date" class="form-control" id="leavingDate" name="leavingDate"
                    [(ngModel)]="settlement.leavingDate" required />
@@ -47,34 +298,47 @@
           <!-- Deposit Amount (readonly) -->
           <div class="col-md-6">
             <label for="depositAmount" class="form-label fw-semibold">
-              <i class="bi bi-safe me-1"></i>{{ lang.t('settlement_lbl_deposit') }}
+              <i class="bi bi-safe me-1 text-primary"></i>{{ lang.t('settlement_lbl_deposit') }}
             </label>
-            <input type="number" class="form-control bg-light" id="depositAmount" name="depositAmount"
-                   [(ngModel)]="settlement.depositAmount" readonly />
+            <div class="input-group">
+              <span class="input-group-text">₹</span>
+              <input type="number" class="form-control bg-light" id="depositAmount" name="depositAmount"
+                     [(ngModel)]="settlement.depositAmount" readonly />
+              <span class="input-group-text text-muted"><i class="bi bi-lock"></i></span>
+            </div>
           </div>
 
-          <!-- Pending Rent -->
+          <!-- Pending Rent (auto-filled, editable) -->
           <div class="col-md-6">
             <label for="pendingRent" class="form-label fw-semibold">
-              <i class="bi bi-exclamation-circle me-1"></i>{{ lang.t('settlement_lbl_pending') }}
+              <i class="bi bi-exclamation-circle me-1 text-danger"></i>{{ lang.t('settlement_lbl_pending') }}
             </label>
-            <input type="number" class="form-control" id="pendingRent" name="pendingRent"
-                   [(ngModel)]="settlement.pendingRent"
-                   (ngModelChange)="calculateRefund()" min="0" required />
+            <div class="input-group">
+              <span class="input-group-text">₹</span>
+              <input type="number" class="form-control" id="pendingRent" name="pendingRent"
+                     [(ngModel)]="settlement.pendingRent"
+                     (ngModelChange)="calculateRefund()" min="0" required />
+            </div>
+            <small class="text-info d-flex align-items-center mt-1">
+              <i class="bi bi-info-circle me-1"></i>{{ lang.t('settlement_auto_filled') }}
+            </small>
           </div>
 
           <!-- Deduction Amount -->
           <div class="col-md-6">
             <label for="deductionAmount" class="form-label fw-semibold">
-              <i class="bi bi-dash-circle me-1"></i>{{ lang.t('settlement_lbl_deduction') }}
+              <i class="bi bi-dash-circle me-1 text-warning"></i>{{ lang.t('settlement_lbl_deduction') }}
             </label>
-            <input type="number" class="form-control" id="deductionAmount" name="deductionAmount"
-                   [(ngModel)]="settlement.deductionAmount"
-                   (ngModelChange)="calculateRefund()" min="0" required />
+            <div class="input-group">
+              <span class="input-group-text">₹</span>
+              <input type="number" class="form-control" id="deductionAmount" name="deductionAmount"
+                     [(ngModel)]="settlement.deductionAmount"
+                     (ngModelChange)="calculateRefund()" min="0" required />
+            </div>
           </div>
 
           <!-- Deduction Reason -->
-          <div class="col-md-6">
+          <div class="col-12">
             <label for="deductionReason" class="form-label fw-semibold">
               <i class="bi bi-chat-left-text me-1"></i>{{ lang.t('settlement_lbl_reason') }}
             </label>
@@ -84,27 +348,37 @@
           </div>
         </div>
 
-        <!-- Formula Display -->
+        <!-- Refund Formula Bar -->
         <div class="formula-bar mt-4 p-3 rounded-3">
-          <div class="row text-center align-items-center">
+          <div class="row text-center align-items-center g-0">
             <div class="col">
-              <small class="text-muted d-block">{{ lang.t('settlement_formula_deposit') }}</small>
-              <span class="fw-bold text-primary">₹{{ settlement.depositAmount | number }}</span>
+              <small class="text-muted d-block fw-semibold text-uppercase" style="font-size:0.7rem">
+                {{ lang.t('settlement_formula_deposit') }}
+              </small>
+              <span class="fw-bold text-primary fs-6">₹{{ settlement.depositAmount | number }}</span>
             </div>
-            <div class="col-auto"><span class="fs-4 text-muted">−</span></div>
+            <div class="col-auto"><span class="fs-4 text-muted operator-sym">−</span></div>
             <div class="col">
-              <small class="text-muted d-block">{{ lang.t('settlement_formula_pending') }}</small>
-              <span class="fw-bold text-danger">₹{{ settlement.pendingRent | number }}</span>
+              <small class="text-muted d-block fw-semibold text-uppercase" style="font-size:0.7rem">
+                {{ lang.t('settlement_formula_pending') }}
+              </small>
+              <span class="fw-bold text-danger fs-6">₹{{ settlement.pendingRent | number }}</span>
             </div>
-            <div class="col-auto"><span class="fs-4 text-muted">−</span></div>
+            <div class="col-auto"><span class="fs-4 text-muted operator-sym">−</span></div>
             <div class="col">
-              <small class="text-muted d-block">{{ lang.t('settlement_formula_deduction') }}</small>
-              <span class="fw-bold text-warning">₹{{ settlement.deductionAmount | number }}</span>
+              <small class="text-muted d-block fw-semibold text-uppercase" style="font-size:0.7rem">
+                {{ lang.t('settlement_formula_deduction') }}
+              </small>
+              <span class="fw-bold text-warning fs-6">₹{{ settlement.deductionAmount | number }}</span>
             </div>
-            <div class="col-auto"><span class="fs-4 text-muted">=</span></div>
+            <div class="col-auto"><span class="fs-4 text-muted operator-sym">=</span></div>
             <div class="col">
-              <small class="text-muted d-block">{{ lang.t('settlement_formula_refund') }}</small>
-              <span class="fw-bold fs-5" [ngClass]="settlement.finalRefundAmount >= 0 ? 'text-success' : 'text-danger'">
+              <small class="text-muted d-block fw-semibold text-uppercase" style="font-size:0.7rem">
+                {{ lang.t('settlement_formula_refund') }}
+              </small>
+              <span class="fw-bold fs-5"
+                    [class.text-success]="settlement.finalRefundAmount >= 0"
+                    [class.text-danger]="settlement.finalRefundAmount < 0">
                 ₹{{ settlement.finalRefundAmount | number }}
               </span>
             </div>
@@ -112,34 +386,75 @@
         </div>
 
         <!-- Final Refund Highlight Box -->
-        <div class="refund-highlight mt-4 p-4 rounded-3 text-center">
-          <div class="d-flex align-items-center justify-content-center">
-            <i class="bi bi-wallet2 fs-2 me-3"></i>
-            <div>
-              <small class="d-block text-uppercase fw-semibold opacity-75">{{ lang.t('settlement_lbl_refund') }}</small>
+        <div class="refund-highlight mt-4 p-4 rounded-3">
+          <div class="row align-items-center g-0">
+            <div class="col-auto me-4">
+              <i class="bi bi-wallet2 fs-1 opacity-75"></i>
+            </div>
+            <div class="col">
+              <small class="d-block text-uppercase fw-semibold opacity-75 mb-1">
+                {{ lang.t('settlement_lbl_refund') }}
+              </small>
               <span class="refund-amount">₹{{ settlement.finalRefundAmount | number }}</span>
+            </div>
+            <div class="col-auto ms-4 d-none d-md-block">
+              <div class="refund-meta">
+                <div class="meta-chip">
+                  <i class="bi bi-safe2"></i>
+                  <span>Deposit: ₹{{ settlement.depositAmount | number }}</span>
+                </div>
+                <div class="meta-chip text-danger-soft">
+                  <i class="bi bi-x-circle"></i>
+                  <span>Deductions: ₹{{ settlement.pendingRent + settlement.deductionAmount | number }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Submit Button -->
+        <!-- Final Settlement Button -->
         <div class="text-end mt-4">
-          <button type="submit" class="btn btn-primary btn-lg px-5"
+          <button type="submit" class="btn btn-final-settlement btn-lg px-5"
                   [disabled]="!settlementForm.valid || settlement.renterId === 0 || !settlement.leavingDate">
-            <i class="bi bi-check2-circle me-2"></i>{{ lang.t('settlement_submit') }}
+            <i class="bi bi-check2-circle me-2"></i>
+            {{ lang.t('settlement_final_btn') }}
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Past Settlements Table -->
+  <!-- ══════════════════════════════════════════════════════
+       PAST SETTLEMENTS TABLE
+  ══════════════════════════════════════════════════════════ -->
   <div class="card shadow-sm">
     <div class="card-header bg-white border-bottom">
-      <h5 class="mb-0 fw-bold">
-        <i class="bi bi-clock-history me-2 text-secondary"></i>{{ lang.t('settlement_past') }}
-      </h5>
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h5 class="mb-0 fw-bold">
+          <i class="bi bi-clock-history me-2 text-secondary"></i>{{ lang.t('settlement_past') }}
+          <span class="badge bg-secondary ms-2" style="font-size:0.8rem">{{ settlements.length }}</span>
+        </h5>
+        <!-- Search -->
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <div class="input-group input-group-sm" style="width:220px">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" [(ngModel)]="filterSearch"
+                   placeholder="{{ lang.t('lbl_search_placeholder') }}"
+                   (ngModelChange)="settlementsPage = 1" />
+            <button class="btn btn-outline-secondary" *ngIf="hasActiveFilters" (click)="resetFilters()">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+          <select class="form-select form-select-sm w-auto"
+                  [(ngModel)]="settlementsPageSize" (ngModelChange)="onSettlementsPageSizeChange()">
+            <option [value]="5">5 {{ lang.t('pagination_rows') }}</option>
+            <option [value]="10">10 {{ lang.t('pagination_rows') }}</option>
+            <option [value]="20">20 {{ lang.t('pagination_rows') }}</option>
+          </select>
+        </div>
+      </div>
     </div>
+
     <div class="card-body p-0">
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
@@ -182,23 +497,26 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let s of displayedSettlements; let i = index">
-              <td>{{ i + 1 }}</td>
+            <tr *ngFor="let s of pagedSettlements; let i = index">
+              <td class="text-muted">{{ settlementsStartEntry + i }}</td>
               <td class="fw-semibold">{{ s.renterName }}</td>
               <td><span class="badge bg-secondary">{{ s.flatNo }}</span></td>
-              <td class="d-none d-md-table-cell">{{ s.leavingDate }}</td>
-              <td>{{ s.depositAmount | number }}</td>
-              <td class="text-danger">{{ s.pendingRent | number }}</td>
-              <td class="text-warning">{{ s.deductionAmount | number }}</td>
-              <td class="d-none d-md-table-cell">{{ s.deductionReason || '—' }}</td>
+              <td class="d-none d-md-table-cell text-muted small">{{ s.leavingDate }}</td>
+              <td>₹{{ s.depositAmount | number }}</td>
+              <td class="text-danger fw-semibold">₹{{ s.pendingRent | number }}</td>
+              <td class="text-warning fw-semibold">₹{{ s.deductionAmount | number }}</td>
+              <td class="d-none d-md-table-cell text-muted small">{{ s.deductionReason || '—' }}</td>
               <td>
-                <span class="badge rounded-pill" [ngClass]="s.finalRefundAmount >= 0 ? 'bg-success' : 'bg-danger'">
+                <span class="badge rounded-pill fs-sm"
+                      [class.bg-success]="s.finalRefundAmount >= 0"
+                      [class.bg-danger]="s.finalRefundAmount < 0">
                   ₹{{ s.finalRefundAmount | number }}
                 </span>
               </td>
-              <td class="d-none d-md-table-cell">{{ s.settlementDate }}</td>
+              <td class="d-none d-md-table-cell text-muted small">{{ s.settlementDate }}</td>
             </tr>
-            <tr *ngIf="displayedSettlements.length === 0">
+
+            <tr *ngIf="filteredSettlements.length === 0">
               <td colspan="10" class="text-center text-muted py-4">
                 <i class="bi bi-inbox fs-3 d-block mb-2"></i>
                 {{ lang.t('settlement_no_data') }}
@@ -207,6 +525,33 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Settlements Pagination -->
+      <div class="pagination-bar px-3 py-2" *ngIf="filteredSettlements.length > 0">
+        <small class="text-muted">
+          {{ lang.t('pagination_showing') }} {{ settlementsStartEntry }}–{{ settlementsEndEntry }}
+          {{ lang.t('pagination_of') }} {{ filteredSettlements.length }} {{ lang.t('pagination_entries') }}
+        </small>
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" [class.disabled]="settlementsPage === 1">
+              <button class="page-link" (click)="prevSettlementsPage()">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+            </li>
+            <li class="page-item" *ngFor="let p of getSettlementsPages()"
+                [class.active]="p === settlementsPage">
+              <button class="page-link" (click)="goToSettlementsPage(p)">{{ p }}</button>
+            </li>
+            <li class="page-item" [class.disabled]="settlementsPage === totalSettlementsPages">
+              <button class="page-link" (click)="nextSettlementsPage()">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
     </div>
   </div>
+
 </div>

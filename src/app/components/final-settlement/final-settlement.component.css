@@ -1,37 +1,279 @@
-/* Settlement Card */
-.settlement-card {
-  border: none;
-  border-radius: 12px;
-  overflow: hidden;
+/* ═══════════════════════════════════════════════════════════
+   Step Indicator
+═══════════════════════════════════════════════════════════ */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0;
 }
 
-.settlement-card .card-header {
-  padding: 1rem 1.5rem;
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  opacity: 0.4;
+  transition: opacity 0.3s;
 }
 
-/* Formula Bar */
-.formula-bar {
-  background: #f0f5ff;
-  border: 1px dashed #93b4f5;
+.step.active {
+  opacity: 1;
 }
 
-/* Refund Highlight */
-.refund-highlight {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+.step.completed .step-circle {
+  background: #10b981;
+  border-color: #10b981;
   color: #fff;
 }
 
-.refund-highlight .refund-amount {
-  font-size: 2.25rem;
+.step-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  border: 2px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #6b7280;
+  transition: all 0.3s;
+}
+
+.step.active .step-circle {
+  background: #eff6ff;
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.step-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #6b7280;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.step.active .step-label {
+  color: #2563eb;
+}
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: #e5e7eb;
+  margin: 0 0.5rem;
+  margin-bottom: 1.35rem;
+  transition: background 0.3s;
+}
+
+.step-line.active {
+  background: linear-gradient(90deg, #10b981, #2563eb);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Phase Cards
+═══════════════════════════════════════════════════════════ */
+.phase-card {
+  border: none;
+  border-radius: 14px;
+  overflow: hidden;
+  animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.phase-header-1 {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  padding: 1rem 1.5rem;
+}
+
+.phase-header-2 {
+  background: linear-gradient(135deg, #0f766e, #0d9488);
+  color: #fff;
+  padding: 1rem 1.5rem;
+}
+
+.phase-header-3 {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: #fff;
+  padding: 1rem 1.5rem;
+}
+
+.phase-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  font-size: 0.9rem;
   font-weight: 800;
-  letter-spacing: -0.5px;
 }
 
-.refund-highlight .bi-wallet2 {
-  opacity: 0.8;
+/* ═══════════════════════════════════════════════════════════
+   Renter Info Strip
+═══════════════════════════════════════════════════════════ */
+.renter-info-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-/* Form Controls */
+.info-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 20px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #1d4ed8;
+}
+
+.info-chip i {
+  font-size: 0.9rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Select Prompt
+═══════════════════════════════════════════════════════════ */
+.select-prompt {
+  display: flex;
+  align-items: center;
+  background: #f0f9ff;
+  border: 1px dashed #7dd3fc;
+  border-radius: 10px;
+  padding: 0.85rem 1.2rem;
+  color: #0369a1;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Status Banner (All Clear / Discrepancy)
+═══════════════════════════════════════════════════════════ */
+.status-banner {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.banner-clear {
+  background: #d1fae5;
+  color: #065f46;
+  border-bottom: 1px solid #a7f3d0;
+}
+
+.banner-warn {
+  background: #fef3c7;
+  color: #92400e;
+  border-bottom: 1px solid #fde68a;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Table Toolbar & Pagination
+═══════════════════════════════════════════════════════════ */
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-top: 1px solid #f3f4f6;
+  background: #fafafa;
+}
+
+.page-link {
+  border-radius: 6px !important;
+  margin: 0 1px;
+  border-color: #e5e7eb;
+  color: #374151;
+  font-size: 0.82rem;
+  padding: 0.25rem 0.55rem;
+  transition: all 0.15s;
+}
+
+.page-item.active .page-link {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.page-link:hover {
+  background-color: #eff6ff;
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Ledger Table
+═══════════════════════════════════════════════════════════ */
+.ledger-table thead th {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  padding: 0.75rem 1rem;
+}
+
+.ledger-table tbody td {
+  font-size: 0.88rem;
+  padding: 0.65rem 1rem;
+  vertical-align: middle;
+}
+
+.row-paid {
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.row-partial {
+  background: rgba(245, 158, 11, 0.06);
+}
+
+.row-unpaid {
+  background: rgba(239, 68, 68, 0.06);
+}
+
+.status-badge {
+  font-size: 0.78rem;
+  padding: 0.3em 0.7em;
+  border-radius: 20px;
+}
+
+/* Totals row */
+.totals-row {
+  background: #f8fafc;
+  border-top: 2px solid #e2e8f0;
+}
+
+.totals-row td {
+  font-size: 0.88rem;
+  padding: 0.75rem 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Settlement Form
+═══════════════════════════════════════════════════════════ */
 .form-label {
   font-size: 0.875rem;
   margin-bottom: 0.35rem;
@@ -49,77 +291,147 @@
 .form-select:focus,
 .form-control:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-/* Table */
-.table th {
+.form-select-lg {
+  border-radius: 10px;
+  font-size: 1rem;
+}
+
+.input-group-text {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Formula Bar
+═══════════════════════════════════════════════════════════ */
+.formula-bar {
+  background: #f0f5ff;
+  border: 1px dashed #93b4f5;
+}
+
+.operator-sym {
+  font-weight: 300;
+  opacity: 0.6;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Refund Highlight Box
+═══════════════════════════════════════════════════════════ */
+.refund-highlight {
+  background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+  color: #fff;
+}
+
+.refund-amount {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.refund-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.meta-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.text-danger-soft {
+  color: #fca5a5;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Final Settlement Button
+═══════════════════════════════════════════════════════════ */
+.btn-final-settlement {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: none;
+  color: #fff;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.3px;
+  transition: all 0.25s;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+}
+
+.btn-final-settlement:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5);
+  color: #fff;
+}
+
+.btn-final-settlement:disabled {
+  opacity: 0.55;
+  transform: none;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Past Settlements Table
+═══════════════════════════════════════════════════════════ */
+.table th {
+  font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   color: #6b7280;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .table td {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   vertical-align: middle;
 }
 
-/* Button */
-.btn-primary {
-  background-color: #2563eb;
-  border-color: #2563eb;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.2s;
+.sortable-th {
+  cursor: pointer;
+  user-select: none;
 }
 
-.btn-primary:hover {
-  background-color: #1d4ed8;
-  border-color: #1d4ed8;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+.sortable-th:hover {
+  background: rgba(37, 99, 235, 0.06);
 }
 
-.btn-primary:disabled {
-  background-color: #93c5fd;
-  border-color: #93c5fd;
-  transform: none;
-  box-shadow: none;
+.sort-icon {
+  font-size: 0.7rem;
 }
 
-/* Card general */
+/* ═══════════════════════════════════════════════════════════
+   Cards
+═══════════════════════════════════════════════════════════ */
 .card {
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
 }
 
-.card-header {
-  border-radius: 12px 12px 0 0 !important;
-}
-
-/* Alert */
+/* ═══════════════════════════════════════════════════════════
+   Alert
+═══════════════════════════════════════════════════════════ */
 .alert-success {
   border-radius: 10px;
   border: none;
-  background-color: #d1fae5;
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
   color: #065f46;
 }
 
-/* Badge */
-.badge.bg-success {
-  font-size: 0.85rem;
-  padding: 0.4em 0.75em;
-}
-
-.badge.bg-danger {
-  font-size: 0.85rem;
-  padding: 0.4em 0.75em;
-}
-
-/* Responsive */
+/* ═══════════════════════════════════════════════════════════
+   Responsive
+═══════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   .formula-bar .row {
     flex-direction: column;
@@ -130,30 +442,33 @@
     display: none;
   }
 
-  .refund-highlight .refund-amount {
-    font-size: 1.75rem;
+  .refund-amount {
+    font-size: 1.8rem;
+  }
+
+  .step-label {
+    font-size: 0.6rem;
+  }
+
+  .step-circle {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
   }
 }
 
 @media (max-width: 575.98px) {
-  .page-title {
-    font-size: 1.15rem;
+  .step-label {
+    display: none;
   }
-  .card-body {
-    padding: 12px;
-  }
-  .refund-highlight .refund-amount {
+
+  .refund-amount {
     font-size: 1.5rem;
   }
-  .table thead th,
-  .table tbody td {
-    padding: 6px 8px;
-    font-size: 0.8rem;
-  }
-}
 
-@media (max-width: 359.98px) {
-  .formula-bar {
-    padding: 0.75rem;
+  .ledger-table tbody td,
+  .table tbody td {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.8rem;
   }
 }

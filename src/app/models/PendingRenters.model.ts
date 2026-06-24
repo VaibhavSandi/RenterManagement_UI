@@ -6,11 +6,15 @@ export interface PendingRenters {
 
   flatNo: string;
 
+  month: string;
+
   monthlyRent: number;
 
   paidAmount: number;
 
   pendingAmount: number;
+
+  dueDate: string;
 
   status: string;
 

@@ -29,6 +29,8 @@ export class TransactionHistoryComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+
+    
     this.langSub = this.lang.lang$.subscribe(() => this.cdr.markForCheck());
   }
 

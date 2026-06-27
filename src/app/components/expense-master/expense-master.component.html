@@ -1,0 +1,151 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title mb-0">
+      <i class="bi bi-wallet2 me-2"></i>Expenses & Maintenance
+    </h2>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <i class="bi bi-plus-circle me-1"></i> Add Expense
+    </button>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar mb-3 p-3 bg-white rounded shadow-sm d-flex gap-3 flex-wrap align-items-end">
+    <div>
+      <label class="form-label mb-1">From Date</label>
+      <input type="date" class="form-control form-control-sm" [(ngModel)]="filterFromDate" (change)="applyFilters()">
+    </div>
+    <div>
+      <label class="form-label mb-1">To Date</label>
+      <input type="date" class="form-control form-control-sm" [(ngModel)]="filterToDate" (change)="applyFilters()">
+    </div>
+    <div *ngIf="filterFromDate || filterToDate">
+      <button class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
+        <i class="bi bi-x-circle me-1"></i> Clear
+      </button>
+    </div>
+    <div class="ms-auto fw-semibold text-muted align-self-center">
+      Showing {{ displayedExpenses.length }} of {{ expenses.length }} expenses
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th class="sortable-th" (click)="onSort('expenseDate')">
+                Date
+                <i class="bi ms-1 sort-icon {{ sortIconClass('expenseDate') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('description')">
+                Description
+                <i class="bi ms-1 sort-icon {{ sortIconClass('description') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('category')">
+                Category
+                <i class="bi ms-1 sort-icon {{ sortIconClass('category') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('flatNo')">
+                Flat
+                <i class="bi ms-1 sort-icon {{ sortIconClass('flatNo') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('amount')">
+                Amount
+                <i class="bi ms-1 sort-icon {{ sortIconClass('amount') }}"></i>
+              </th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let expense of displayedExpenses; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ expense.expenseDate }}</td>
+              <td class="fw-semibold">{{ expense.description }}</td>
+              <td><span class="badge bg-secondary">{{ expense.category }}</span></td>
+              <td>{{ expense.flatNo || 'Building' }}</td>
+              <td class="fw-bold text-danger">₹{{ expense.amount | number }}</td>
+              <td class="text-center">
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-primary" title="Edit" (click)="openEditModal(expense)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-outline-danger" title="Delete" (click)="deleteExpense(expense.expenseId!)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="displayedExpenses.length === 0">
+              <td colspan="7" class="text-center text-muted py-4">
+                No expenses found.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop-custom" *ngIf="showModal" (click)="closeModal()"></div>
+<div class="modal d-block" tabindex="-1" *ngIf="showModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="bi" [ngClass]="isEditing ? 'bi-pencil-square' : 'bi-plus-lg'"></i>
+        {{ isEditing ? 'Edit Expense' : 'Add New Expense' }}
+      </h5>
+      <button type="button" class="btn-close" (click)="closeModal()"></button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="saveExpense()">
+        <div class="row g-3">
+          <div class="col-md-12">
+            <label class="form-label">Description <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="currentExpense.description" name="description" required placeholder="e.g. Plumbing repair">
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label">Amount (₹) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" [(ngModel)]="currentExpense.amount" name="amount" required min="0">
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label">Date <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" [(ngModel)]="currentExpense.expenseDate" name="expenseDate" required>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Category <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="currentExpense.category" name="category" required>
+              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Link to Flat</label>
+            <select class="form-select" [(ngModel)]="currentExpense.flatId" name="flatId">
+              <option [ngValue]="null">Whole Building / NA</option>
+              <option *ngFor="let flat of flats" [ngValue]="flat.flatId">
+                {{ flat.flatNo }} - {{ flat.buildingName }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi" [ngClass]="isEditing ? 'bi-check-lg' : 'bi-plus-lg'"></i>
+            {{ isEditing ? 'Update' : 'Save' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+</div>

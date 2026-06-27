@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import {
-  Flat, Renter, RentPayment, PendingRent, Settlement, DashboardStats, User
+  Flat, Renter, RentPayment, PendingRent, Settlement1, DashboardStats, User
 } from '../models/interfaces';
 
 @Injectable({
@@ -61,7 +61,7 @@ export class MockDataService {
   ];
 
   // ── Settlements ──
-  private settlements: Settlement[] = [
+  private settlements: Settlement1[] = [
     { id: 1, renterId: 8, renterName: 'Kavita Mishra', flatNo: 'A-103', leavingDate: '2025-12-31', depositAmount: 27000, pendingRent: 9000, deductionAmount: 2000, deductionReason: 'Wall damage repair', finalRefundAmount: 16000, settlementDate: '2026-01-05' },
   ];
 
@@ -99,26 +99,26 @@ export class MockDataService {
     }
   }
 
-  // ────────── DASHBOARD ──────────
-  getDashboardStats(): DashboardStats {
-    const totalFlats = this.flats.length;
-    const occupiedFlats = this.flats.filter(f => f.status === 'Occupied').length;
-    const vacantFlats = this.flats.filter(f => f.status === 'Vacant').length;
-    const activeRenters = this.renters.filter(r => r.status === 'Active');
-    const currentMonthRent = activeRenters.reduce((s, r) => s + r.monthlyRent, 0);
-    const junePayments = this.rentPayments.filter(p => p.month === 'June 2026');
-    const collectedAmount = junePayments.reduce((s, p) => s + p.amountPaid, 0);
-    const pendingAmount = currentMonthRent - collectedAmount;
-    return {
-      totalFlats,
-      occupiedFlats,
-      vacantFlats,
-      currentMonthRent,
-      collectedAmount,
-      pendingAmount: pendingAmount > 0 ? pendingAmount : 0,
-      totalActiveRenters: activeRenters.length,
-    };
-  }
+  // // ────────── DASHBOARD ──────────
+  // getDashboardStats(): DashboardStats {
+  //   const totalFlats = this.flats.length;
+  //   const occupiedFlats = this.flats.filter(f => f.status === 'Occupied').length;
+  //   const vacantFlats = this.flats.filter(f => f.status === 'Vacant').length;
+  //   const activeRenters = this.renters.filter(r => r.status === 'Active');
+  //   const currentMonthRent = activeRenters.reduce((s, r) => s + r.monthlyRent, 0);
+  //   const junePayments = this.rentPayments.filter(p => p.month === 'June 2026');
+  //   const collectedAmount = junePayments.reduce((s, p) => s + p.amountPaid, 0);
+  //   const pendingAmount = currentMonthRent - collectedAmount;
+  //   return {
+  //     totalFlats,
+  //     occupiedFlats,
+  //     vacantFlats,
+  //     currentMonthRent,
+  //     collectedAmount,
+  //     pendingAmount: pendingAmount > 0 ? pendingAmount : 0,
+  //     totalActiveRenters: activeRenters.length,
+  //   };
+  // }
 
   // ────────── FLATS ──────────
   getFlats(): Flat[] {
@@ -217,12 +217,12 @@ export class MockDataService {
   }
 
   // ────────── SETTLEMENTS ──────────
-  getSettlements(): Settlement[] {
+  getSettlements(): Settlement1[] {
     return [...this.settlements];
   }
 
-  addSettlement(settlement: Omit<Settlement, 'id'>): Settlement {
-    const newSettlement: Settlement = { ...settlement, id: this.settlements.length + 1 };
+  addSettlement(settlement: Omit<Settlement1, 'id'>): Settlement1 {
+    const newSettlement: Settlement1 = { ...settlement, id: this.settlements.length + 1 };
     this.settlements.push(newSettlement);
     // Mark renter as Left
     const renter = this.renters.find(r => r.id === newSettlement.renterId);

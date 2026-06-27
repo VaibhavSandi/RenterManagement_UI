@@ -29,8 +29,21 @@ export class RentPaymentComponent implements OnInit, OnDestroy {
   filterSearch = '';
   filterMode = '';
 
+  // Backend API Filter state
+  backendFilterRenterId: number | '' = '';
+  backendFilterFromDate: string = '';
+  backendFilterToDate: string = '';
+  
+  isFilterOpen = false;
+  isFilterApplied = false;
+
+
   // Sort state
   sortConfig: SortConfig = { column: '', direction: '' };
+
+  // Pagination state
+  currentPage = 1;
+  pageSize = 10;
 
   months: string[] = [
     'January 2026', 'February 2026', 'March 2026', 'April 2026',
@@ -83,31 +96,63 @@ export class RentPaymentComponent implements OnInit, OnDestroy {
     this.langSub?.unsubscribe();
   }
 
- loadPayments(): void {
+  loadPayments(): void {
+    this.renterservice.getAllRentPayments()
+      .subscribe({
+        next: (data) => {
+          this.payments = data.sort((a, b) =>
+            new Date(b.paymentDate ?? '').getTime() -
+            new Date(a.paymentDate ?? '').getTime()
+          );
+          this.isFilterApplied = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error(error);
+        }
+      });
+  }
 
-  this.renterservice.getAllRentPayments()
-    .subscribe({
+  applyBackendFilter(): void {
+    const rId = this.backendFilterRenterId === '' ? undefined : +this.backendFilterRenterId;
+    const from = this.backendFilterFromDate === '' ? undefined : this.backendFilterFromDate;
+    const to = this.backendFilterToDate === '' ? undefined : this.backendFilterToDate;
+    
+    this.renterservice.filterRentPayments(rId, from, to)
+      .subscribe({
+        next: (data) => {
+          this.payments = data.sort((a, b) =>
+            new Date(b.paymentDate ?? '').getTime() -
+            new Date(a.paymentDate ?? '').getTime()
+          );
+          this.currentPage = 1;
+          this.isFilterApplied = true;
+          this.isFilterOpen = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error(error);
+        }
+      });
+  }
 
-      next: (data) => {
+  toggleFilter(): void {
+    this.isFilterOpen = !this.isFilterOpen;
+    if (this.isFilterOpen) {
+      this.isFilterApplied = true; // Effectively hides the payment details card
+    }
+    this.cdr.markForCheck();
+  }
 
-        this.payments = data.sort((a, b) =>
-          new Date(b.paymentDate ?? '').getTime() -
-          new Date(a.paymentDate ?? '').getTime()
-        );
+  clearBackendFilter(): void {
+    this.backendFilterRenterId = '';
+    this.backendFilterFromDate = '';
+    this.backendFilterToDate = '';
+    this.isFilterApplied = false;
+    this.isFilterOpen = false;
+    this.loadPayments();
+  }
 
-        this.cdr.markForCheck();
-
-      },
-
-      error: (error) => {
-
-        console.error(error);
-
-      }
-
-    });
-
-}
 
   onRenterChange(): void {
     const renter = this.activeRenters.find(r => r.renterId === +this.payment.renterId);
@@ -167,6 +212,7 @@ const payload: RentPayment = {
   // ── Sort ────────────────────────────────────────────────────────
   onSort(column: string): void {
     this.sortConfig = toggleSort(this.sortConfig, column);
+    this.currentPage = 1;
     this.cdr.markForCheck();
   }
 
@@ -174,9 +220,14 @@ const payload: RentPayment = {
     return sortIcon(this.sortConfig, column);
   }
 
+  minVal(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
   resetFilters(): void {
     this.filterSearch = '';
     this.filterMode = '';
+    this.currentPage = 1;
     this.cdr.markForCheck();
   }
 
@@ -184,17 +235,15 @@ const payload: RentPayment = {
     return this.filterSearch.trim().length > 0 || this.filterMode.length > 0;
   }
 
-  // ── Computed list ──────────────────────────────────────────────
-  get displayedPayments(): RentPayment[] {
+  // ── Computed list (pre-pagination) ─────────────────────────────
+  get filteredPayments(): RentPayment[] {
     let result = this.payments;
 
     if (this.filterSearch.trim()) {
       const q = this.filterSearch.trim().toLowerCase();
       result = result.filter(p =>
         p.renterName!.toLowerCase().includes(q) ||
-        p.flatNo!.toLowerCase().includes(q) 
-        // ||
-        //  p.rentMonth!.toLowerCase().includes(q)
+        p.flatNo!.toLowerCase().includes(q)
       );
     }
 
@@ -203,5 +252,103 @@ const payload: RentPayment = {
     }
 
     return sortArray(result, this.sortConfig.column, this.sortConfig.direction);
+  }
+
+  // ── Paginated slice ────────────────────────────────────────────
+  get displayedPayments(): RentPayment[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredPayments.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredPayments.length / this.pageSize));
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    for (let i = 1; i <= this.totalPages; i++) pages.push(i);
+    return pages;
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.cdr.markForCheck();
+  }
+
+  changePageSize(size: number): void {
+    this.pageSize = size;
+    this.currentPage = 1;
+    this.cdr.markForCheck();
+  }
+
+  exportToExcel(): void {
+    const data = this.filteredPayments;
+    if (!data || data.length === 0) {
+      return;
+    }
+
+    const renter = this.backendFilterRenterId 
+      ? this.activeRenters.find(r => r.renterId === +this.backendFilterRenterId)?.renterName || 'Unknown Renter'
+      : 'All Renters';
+    
+    const fromDate = this.backendFilterFromDate || 'Start';
+    const toDate = this.backendFilterToDate || 'Present';
+
+    let html = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head><meta charset="utf-8"></head>
+      <body>
+        <table>
+          <tr><td colspan="9" style="font-size: 16px; font-weight: bold; text-align: center;">Transaction Details</td></tr>
+          <tr><td colspan="9" style="font-weight: bold; background-color: #ffff00;">Renter Name: ${renter}</td></tr>
+          <tr><td colspan="9" style="font-weight: bold; background-color: #ffff00;">Rent History between ${fromDate} and ${toDate}</td></tr>
+          <tr><td colspan="9"></td></tr>
+          <tr>
+            <th style="font-weight: bold; border: 1px solid #000; background-color: #f2f2f2;">No</th>
+            <th style="font-weight: bold; border: 1px solid #000; background-color: #f2f2f2;">Renter Name</th>
+            <th style="font-weight: bold; border: 1px solid #000; background-color: #f2f2f2;">Flat No</th>
+            <th style="font-weight: bold; border: 1px solid #000; background-color: #f2f2f2;">Month</th>
+            <th style="font-weight: bold; border: 1px solid #000; background-color: #f2f2f2;">Year</th>
+            <th style="font-weight: bold; border: 1px solid #000; background-color: #f2f2f2;">Amount Paid</th>
+            <th style="font-weight: bold; border: 1px solid #000; background-color: #f2f2f2;">Payment Date</th>
+            <th style="font-weight: bold; border: 1px solid #000; background-color: #f2f2f2;">Payment Mode</th>
+            <th style="font-weight: bold; border: 1px solid #000; background-color: #f2f2f2;">Remark</th>
+          </tr>
+    `;
+
+    data.forEach((p, index) => {
+      html += `
+          <tr>
+            <td style="border: 1px solid #ddd;">${index + 1}</td>
+            <td style="border: 1px solid #ddd;">${p.renterName || ''}</td>
+            <td style="border: 1px solid #ddd;">${p.flatNo || ''}</td>
+            <td style="border: 1px solid #ddd;">${p.rentMonth}</td>
+            <td style="border: 1px solid #ddd;">${p.rentYear}</td>
+            <td style="border: 1px solid #ddd;">${p.amountPaid}</td>
+            <td style="border: 1px solid #ddd;">${p.paymentDate || ''}</td>
+            <td style="border: 1px solid #ddd;">${p.paymentMode || ''}</td>
+            <td style="border: 1px solid #ddd;">${p.remark || ''}</td>
+          </tr>
+      `;
+    });
+
+    html += `
+        </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `rent_payments_report_${new Date().toISOString().slice(0,10)}.xls`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   }
 }

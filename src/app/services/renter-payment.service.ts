@@ -23,8 +23,20 @@ export class RenterPaymentService {
   constructor(private http: HttpClient) {}
 
   getAllRentPayments(): Observable<RentPayment[]> {
-    return this.http.get<RentPayment[]>(`${this.apiUrl}/getAllPayments`, {
+    return this.http.get<RentPayment[]>(`${this.apiUrl}/current-month-payments`, {
       headers: this.headers
+    });
+  }
+
+  filterRentPayments(renterId?: number, fromDate?: string, toDate?: string): Observable<RentPayment[]> {
+    let params: any = {};
+    if (renterId) params.renterId = renterId;
+    if (fromDate) params.fromDate = fromDate;
+    if (toDate) params.toDate = toDate;
+    
+    return this.http.get<RentPayment[]>(`${this.apiUrl}/filter`, {
+      headers: this.headers,
+      params: params
     });
   }
 

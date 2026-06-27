@@ -31,7 +31,7 @@
         </select>
       </div>
       <span class="filter-count">
-        {{ displayedRenters.length }} / {{ renters.length }} {{ lang.t('lbl_total') }}
+        {{ filteredRenters.length }} / {{ renters.length }} {{ lang.t('lbl_total') }}
       </span>
     </div>
   </div>
@@ -64,6 +64,10 @@
                 {{ lang.t('renter_col_deposit') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('depositPaid') }}"></i>
               </th>
+              <th class="sortable-th" (click)="onSort('parkingNumber')">
+                Parking No.
+                <i class="bi ms-1 sort-icon {{ sortIconClass('parkingNumber') }}"></i>
+              </th>
               <th class="sortable-th" (click)="onSort('status')">
                 {{ lang.t('renter_col_status') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('status') }}"></i>
@@ -79,6 +83,10 @@
               <td>{{ renter.flatNo }}</td>
               <td>₹{{ renter.monthlyRent | number }}</td>
               <td class="d-none d-md-table-cell">₹{{ renter.depositPaid | number }}</td>
+              <td>
+                <span *ngIf="renter.parkingNumber" class="badge bg-secondary">{{ renter.parkingNumber }}</span>
+                <span *ngIf="!renter.parkingNumber" class="text-muted small">-</span>
+              </td>
               <td>
                 <span class="badge"
                   [ngClass]="renter.status === 'Active' ? 'bg-success' : 'bg-danger'">
@@ -106,6 +114,38 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+    <!-- Pagination Bar -->
+    <div class="pagination-bar" *ngIf="filteredRenters.length > 0">
+      <div class="pagination-info">
+        Showing <strong>{{ (currentPage - 1) * pageSize + 1 }}</strong>–<strong>{{ minVal(currentPage * pageSize, filteredRenters.length) }}</strong> of <strong>{{ filteredRenters.length }}</strong> records
+      </div>
+      <div class="pagination-controls">
+        <button class="pagination-btn nav-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+          <i class="bi bi-chevron-left"></i> Prev
+        </button>
+        <ng-container *ngFor="let p of pageNumbers">
+          <span class="pagination-ellipsis" *ngIf="p === 2 && currentPage > 4">&hellip;</span>
+          <button
+            *ngIf="p === 1 || p === totalPages || (p >= currentPage - 1 && p <= currentPage + 1)"
+            class="pagination-btn"
+            [class.active]="p === currentPage"
+            (click)="goToPage(p)">{{ p }}</button>
+          <span class="pagination-ellipsis" *ngIf="p === totalPages - 1 && currentPage < totalPages - 3">&hellip;</span>
+        </ng-container>
+        <button class="pagination-btn nav-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+          Next <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+      <div class="page-size-select">
+        Rows:
+        <select [(ngModel)]="pageSize" (ngModelChange)="changePageSize($event)">
+          <option [value]="5">5</option>
+          <option [value]="10">10</option>
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+        </select>
       </div>
     </div>
   </div>
@@ -180,6 +220,24 @@
               <option value="Left">{{ lang.t('status_left') }}</option>
             </select>
           </div>
+          <!-- Parking No -->
+          <!-- Parking No -->
+<div class="col-md-6">
+  <label class="form-label">Parking No.</label>
+
+  <select class="form-select"
+          [(ngModel)]="currentRenter.parkingId"
+          name="parkingId">
+
+    <option [ngValue]="null">No Parking</option>
+
+    <option *ngFor="let p of availableParkingSpots"
+            [ngValue]="p.parkingId">
+      {{ p.parkingNumber }}
+    </option>
+
+  </select>
+</div>
         </div>
 
         <div class="d-flex justify-content-end gap-2 mt-4">
@@ -218,6 +276,10 @@
           <div class="col-sm-6">
             <div class="detail-label">{{ lang.t('renter_detail_flat') }}</div>
             <div class="detail-value">{{ viewRenter.flatNo }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="detail-label">Parking No.</div>
+            <div class="detail-value">{{ viewRenter.parkingNumber || 'N/A' }}</div>
           </div>
           <div class="col-sm-6">
             <div class="detail-label">{{ lang.t('renter_detail_joining') }}</div>

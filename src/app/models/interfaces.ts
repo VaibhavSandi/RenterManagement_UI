@@ -46,7 +46,7 @@ export interface PendingRent {
   status: 'Pending' | 'Partial' | 'Paid';
 }
 
-export interface Settlement {
+export interface Settlement1 {
   id: number;
   renterId: number;
   renterName: string;
@@ -79,6 +79,7 @@ export interface DashboardStats {
   currentMonthRent: number;
   collectedAmount: number;
   pendingAmount: number;
+  totalExpenses: number;
   totalActiveRenters: number;
 }
 

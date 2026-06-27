@@ -9,6 +9,8 @@ import { Renter } from '../../models/renter.model';
 import { LanguageService } from '../../services/language.service';
 import { SortConfig, sortArray, toggleSort, sortIcon } from '../../utils/table.utils';
 import { Subscription } from 'rxjs';
+import { ParkingService } from '../../services/parking.service';
+import { parkingmodel } from '../../models/parking.model';
 
 @Component({
   selector: 'app-renter-master',
@@ -26,6 +28,7 @@ export class RenterMasterComponent implements OnInit, OnDestroy {
   isEditing = false;
   currentRenter: Renter = this.getEmptyRenter();
   viewRenter: Renter | null = null;
+  availableParkingSpots:parkingmodel[] = []; // Hardcoded available spots
 
   // Filter state
   filterSearch = '';
@@ -34,10 +37,14 @@ export class RenterMasterComponent implements OnInit, OnDestroy {
   // Sort state
   sortConfig: SortConfig = { column: '', direction: '' };
 
+  // Pagination state
+  currentPage = 1;
+  pageSize = 10;
+
   private langSub!: Subscription;
 
   constructor(
-    private dataService: MockDataService,
+    private parkingservice:ParkingService,
     private renterService: RenterService,
     private flatService: FlatService,
     public lang: LanguageService,
@@ -46,6 +53,7 @@ export class RenterMasterComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadData();
+   this. getEmptyParking()
     this.langSub = this.lang.lang$.subscribe(() => this.cdr.markForCheck());
   }
 
@@ -85,13 +93,33 @@ export class RenterMasterComponent implements OnInit, OnDestroy {
       joiningDate: '',
       monthlyRent: 0,
       depositPaid: 0,
-      status: 'Active'
+      parkingNo: 0,
+      status: 'Active',
+     parkingId:0,
+     parkingNumber:0,
+      isOccupied:true
     };
   }
+getEmptyParking():void{
 
+  this.parkingservice.getActivateParking().subscribe({
+
+    next:(response) =>{
+
+      this.availableParkingSpots=response
+
+      console.log(JSON.stringify(this.availableParkingSpots))
+    }
+
+
+  })
+
+
+}
   openAddModal(): void {
     this.isEditing = false;
     this.currentRenter = this.getEmptyRenter();
+    this.getEmptyParking();
     this.showModal = true;
     this.cdr.markForCheck();
   }
@@ -99,8 +127,24 @@ export class RenterMasterComponent implements OnInit, OnDestroy {
   openEditModal(renter: Renter): void {
     this.isEditing = true;
     this.currentRenter = { ...renter };
-    this.showModal = true;
-    this.cdr.markForCheck();
+    this.parkingservice.getActivateParking().subscribe({
+      next: (response) => {
+        this.availableParkingSpots = response;
+        if (this.currentRenter.parkingId) {
+          this.availableParkingSpots.push({
+            parkingId: this.currentRenter.parkingNo,
+            parkingNumber: this.currentRenter.parkingNumber || 0,
+            isOccupied: true,
+            renterId: 0,
+            renterName: this.currentRenter.renterName,
+            flatId: 0,
+            flatNo: 0
+          });
+        }
+        this.showModal = true;
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   openViewModal(renter: Renter): void {
@@ -125,6 +169,8 @@ export class RenterMasterComponent implements OnInit, OnDestroy {
   }
 
   saveRenter(): void {
+
+    debugger
     if (this.isEditing) {
       this.renterService.updateRenter(this.currentRenter.renterId!, this.currentRenter).subscribe({
         next: () => {
@@ -144,7 +190,11 @@ export class RenterMasterComponent implements OnInit, OnDestroy {
         joiningDate: this.currentRenter.joiningDate,
         monthlyRent: this.currentRenter.monthlyRent,
         depositPaid: this.currentRenter.depositPaid,
-        status: this.currentRenter.status
+        parkingNo: this.currentRenter.parkingNo,
+        status: this.currentRenter.status,
+        parkingId: this.currentRenter.parkingId,
+        parkingNumber: this.currentRenter.parkingNumber,
+        isOccupied: this.currentRenter.isOccupied
       };
       this.renterService.createRenter(payload).subscribe({
         next: () => {
@@ -175,6 +225,7 @@ export class RenterMasterComponent implements OnInit, OnDestroy {
   // ── Sort ────────────────────────────────────────────────────────
   onSort(column: string): void {
     this.sortConfig = toggleSort(this.sortConfig, column);
+    this.currentPage = 1;
     this.cdr.markForCheck();
   }
 
@@ -182,9 +233,14 @@ export class RenterMasterComponent implements OnInit, OnDestroy {
     return sortIcon(this.sortConfig, column);
   }
 
+  minVal(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
   resetFilters(): void {
     this.filterSearch = '';
     this.filterStatus = '';
+    this.currentPage = 1;
     this.cdr.markForCheck();
   }
 
@@ -192,8 +248,8 @@ export class RenterMasterComponent implements OnInit, OnDestroy {
     return this.filterSearch.trim().length > 0 || this.filterStatus.length > 0;
   }
 
-  // ── Computed list ──────────────────────────────────────────────
-  get displayedRenters(): Renter[] {
+  // ── Computed list (pre-pagination) ─────────────────────────────
+  get filteredRenters(): Renter[] {
     let result = this.renters;
 
     if (this.filterSearch.trim()) {
@@ -210,5 +266,34 @@ export class RenterMasterComponent implements OnInit, OnDestroy {
     }
 
     return sortArray(result, this.sortConfig.column, this.sortConfig.direction);
+  }
+
+  // ── Paginated slice ────────────────────────────────────────────
+  get displayedRenters(): Renter[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredRenters.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredRenters.length / this.pageSize));
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    for (let i = 1; i <= this.totalPages; i++) pages.push(i);
+    return pages;
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.cdr.markForCheck();
+  }
+
+  changePageSize(size: number): void {
+    this.pageSize = size;
+    this.currentPage = 1;
+    this.cdr.markForCheck();
+
   }
 }

@@ -74,10 +74,11 @@ export class LayoutComponent implements OnInit, OnDestroy {
       { label: this.lang.t('nav_flat_master'),  icon: 'bi-building',              route: '/flats'        },
       { label: this.lang.t('nav_renter_master'),icon: 'bi-people',                route: '/renters'      },
       { label: this.lang.t('nav_add_payment'),  icon: 'bi-cash-coin',             route: '/payments'     },
-      { label: this.lang.t('nav_transactions'), icon: 'bi-clock-history',         route: '/transactions' },
+      { label: 'Parking Details',               icon: 'bi-p-circle',              route: '/parking'      },
       { label: this.lang.t('nav_pending'),      icon: 'bi-exclamation-triangle',  route: '/pending'      },
       { label: this.lang.t('nav_settlement'),   icon: 'bi-check-circle',          route: '/settlement'   },
       { label: this.lang.t('nav_reports'),      icon: 'bi-file-earmark-bar-graph',route: '/reports'      },
+      { label: 'Expenses',                      icon: 'bi-wallet2',               route: '/expenses'     }
     ];
   }
 

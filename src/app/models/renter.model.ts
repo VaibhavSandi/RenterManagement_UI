@@ -8,5 +8,10 @@ export interface Renter {
   joiningDate: string;
   monthlyRent: number;
   depositPaid: number;
+  parkingNo: number;
   status: string;
+
+ parkingId?:number;
+ parkingNumber?:number;
+ isOccupied:boolean;
 }

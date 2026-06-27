@@ -71,6 +71,23 @@
         <div class="stat-label">{{ lang.t('dashboard_active_renters') }}</div>
       </div>
     </div>
+    <!-- Total Expenses -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="stat-card" style="background: #eab308;">
+        <div class="stat-icon"><i class="bi bi-wallet2"></i></div>
+        <div class="stat-value">{{ formatCurrency(stats.totalExpenses) }}</div>
+        <div class="stat-label">Total Expenses</div>
+      </div>
+    </div>
+
+    <!-- Net Income -->
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="stat-card" style="background: #14b8a6;">
+        <div class="stat-icon"><i class="bi bi-piggy-bank"></i></div>
+        <div class="stat-value">{{ formatCurrency(stats.collectedAmount - stats.totalExpenses) }}</div>
+        <div class="stat-label">Net Income</div>
+      </div>
+    </div>
   </div>
 
   <!-- Tables Row -->
@@ -150,7 +167,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let rent of pendingRents">
+                <tr *ngFor="let rent of displayedPendingRents">
                   <td class="fw-medium">{{ rent.renterName }}</td>
                   <td>
                     <span class="badge bg-light text-dark border">{{ rent.flatNo }}</span>
@@ -171,6 +188,37 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+        <!-- Pending Rents Pagination -->
+        <div class="pagination-bar" *ngIf="pendingRents.length > 0">
+          <div class="pagination-info">
+            Showing <strong>{{ (pendingPage - 1) * pendingPageSize + 1 }}</strong>–<strong>{{ minVal(pendingPage * pendingPageSize, pendingRents.length) }}</strong> of <strong>{{ pendingRents.length }}</strong> records
+          </div>
+          <div class="pagination-controls">
+            <button class="pagination-btn nav-btn" (click)="goToPendingPage(pendingPage - 1)" [disabled]="pendingPage === 1">
+              <i class="bi bi-chevron-left"></i> Prev
+            </button>
+            <ng-container *ngFor="let p of pendingPageNumbers">
+              <span class="pagination-ellipsis" *ngIf="p === 2 && pendingPage > 4">&hellip;</span>
+              <button
+                *ngIf="p === 1 || p === totalPendingPages || (p >= pendingPage - 1 && p <= pendingPage + 1)"
+                class="pagination-btn"
+                [class.active]="p === pendingPage"
+                (click)="goToPendingPage(p)">{{ p }}</button>
+              <span class="pagination-ellipsis" *ngIf="p === totalPendingPages - 1 && pendingPage < totalPendingPages - 3">&hellip;</span>
+            </ng-container>
+            <button class="pagination-btn nav-btn" (click)="goToPendingPage(pendingPage + 1)" [disabled]="pendingPage === totalPendingPages">
+              Next <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+          <div class="page-size-select">
+            Rows:
+            <select [(ngModel)]="pendingPageSize" (ngModelChange)="changePendingPageSize($event)">
+              <option [value]="5">5</option>
+              <option [value]="10">10</option>
+              <option [value]="25">25</option>
+            </select>
           </div>
         </div>
       </div>

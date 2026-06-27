@@ -67,8 +67,8 @@
                   [(ngModel)]="settlement.renterId"
                   (ngModelChange)="onRenterChange()" required>
             <option [value]="0" disabled>{{ lang.t('settlement_ph_renter') }}</option>
-            <option *ngFor="let renter of activeRenters" [value]="renter.id">
-              {{ renter.renterName }} — {{ renter.flatNo }} ({{ renter.buildingName }})
+            <option *ngFor="let renter of activeRenters" [value]="renter.renterId">
+              {{ renter.renterName }} — {{ renter.flatNo }}
             </option>
           </select>
         </div>
@@ -78,7 +78,7 @@
           <div class="renter-info-strip">
             <div class="info-chip">
               <i class="bi bi-building"></i>
-              <span>{{ selectedRenter.flatNo }}, {{ selectedRenter.buildingName }}</span>
+              <span>{{ selectedRenter.flatNo }}</span>
             </div>
             <div class="info-chip">
               <i class="bi bi-calendar-event"></i>
@@ -92,6 +92,11 @@
               <i class="bi bi-clock"></i>
               <span>{{ monthsStayed }} {{ lang.t('settlement_months') }}</span>
             </div>
+          </div>
+          <div class="mt-3 text-end">
+            <button class="btn btn-outline-primary btn-sm rounded-pill" (click)="openRentHistoryModal()">
+              <i class="bi bi-clock-history me-1"></i>Manage Rent History
+            </button>
           </div>
         </div>
 
@@ -136,22 +141,6 @@
         <strong>{{ isAllClear ? lang.t('settlement_all_clear') : lang.t('settlement_discrepancy') }}</strong>
       </div>
 
-      <!-- Page size selector -->
-      <div class="table-toolbar px-3 pt-3 pb-2">
-        <div class="d-flex align-items-center gap-2">
-          <label class="small text-muted mb-0">{{ lang.t('pagination_rows') }}:</label>
-          <select class="form-select form-select-sm w-auto"
-                  [(ngModel)]="ledgerPageSize" (ngModelChange)="onLedgerPageSizeChange()">
-            <option [value]="5">5</option>
-            <option [value]="10">10</option>
-            <option [value]="20">20</option>
-          </select>
-        </div>
-        <small class="text-muted">
-          {{ lang.t('pagination_showing') }} {{ ledgerStartEntry }}–{{ ledgerEndEntry }}
-          {{ lang.t('pagination_of') }} {{ transactionLedger.length }} {{ lang.t('pagination_entries') }}
-        </small>
-      </div>
 
       <!-- Ledger Table -->
       <div class="table-responsive">
@@ -245,28 +234,29 @@
       </div>
 
       <!-- Ledger Pagination -->
-      <div class="pagination-bar px-3 py-2" *ngIf="transactionLedger.length > 0">
-        <small class="text-muted">
-          {{ lang.t('pagination_page') }} {{ ledgerPage }} {{ lang.t('pagination_of') }} {{ totalLedgerPages }}
-        </small>
-        <nav>
-          <ul class="pagination pagination-sm mb-0">
-            <li class="page-item" [class.disabled]="ledgerPage === 1">
-              <button class="page-link" (click)="prevLedgerPage()">
-                <i class="bi bi-chevron-left"></i>
-              </button>
-            </li>
-            <li class="page-item" *ngFor="let p of getLedgerPages()"
-                [class.active]="p === ledgerPage">
-              <button class="page-link" (click)="goToLedgerPage(p)">{{ p }}</button>
-            </li>
-            <li class="page-item" [class.disabled]="ledgerPage === totalLedgerPages">
-              <button class="page-link" (click)="nextLedgerPage()">
-                <i class="bi bi-chevron-right"></i>
-              </button>
-            </li>
-          </ul>
-        </nav>
+      <div class="pagination-bar" *ngIf="transactionLedger.length > 0">
+        <div class="pagination-info">
+          Showing <strong>{{ ledgerStartEntry }}</strong>–<strong>{{ ledgerEndEntry }}</strong> of <strong>{{ transactionLedger.length }}</strong> records
+        </div>
+        <div class="pagination-controls">
+          <button class="pagination-btn nav-btn" (click)="prevLedgerPage()" [disabled]="ledgerPage === 1">
+            <i class="bi bi-chevron-left"></i> Prev
+          </button>
+          <ng-container *ngFor="let p of getLedgerPages()">
+            <button class="pagination-btn" [class.active]="p === ledgerPage" (click)="goToLedgerPage(p)">{{ p }}</button>
+          </ng-container>
+          <button class="pagination-btn nav-btn" (click)="nextLedgerPage()" [disabled]="ledgerPage === totalLedgerPages">
+            Next <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+        <div class="page-size-select">
+          Rows:
+          <select [(ngModel)]="ledgerPageSize" (ngModelChange)="onLedgerPageSizeChange()">
+            <option [value]="5">5</option>
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+          </select>
+        </div>
       </div>
 
     </div>
@@ -292,7 +282,8 @@
               <i class="bi bi-calendar-x me-1 text-danger"></i>{{ lang.t('settlement_lbl_leaving') }}
             </label>
             <input type="date" class="form-control" id="leavingDate" name="leavingDate"
-                   [(ngModel)]="settlement.leavingDate" required />
+                   [(ngModel)]="settlement.leavingDate" 
+                   (ngModelChange)="onLeavingDateChange()" required />
           </div>
 
           <!-- Deposit Amount (readonly) -->
@@ -490,9 +481,9 @@
                 {{ lang.t('settlement_col_refund') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('finalRefundAmount') }}"></i>
               </th>
-              <th class="sortable-th d-none d-md-table-cell" (click)="onSort('settlementDate')">
+              <th class="sortable-th d-none d-md-table-cell" (click)="onSort('leavingDate')">
                 {{ lang.t('settlement_col_date') }}
-                <i class="bi ms-1 sort-icon {{ sortIconClass('settlementDate') }}"></i>
+                <i class="bi ms-1 sort-icon {{ sortIconClass('leavingDate') }}"></i>
               </th>
             </tr>
           </thead>
@@ -513,7 +504,7 @@
                   ₹{{ s.finalRefundAmount | number }}
                 </span>
               </td>
-              <td class="d-none d-md-table-cell text-muted small">{{ s.settlementDate }}</td>
+              <td class="d-none d-md-table-cell text-muted small">{{ s.leavingDate | date:'mediumDate' }}</td>
             </tr>
 
             <tr *ngIf="filteredSettlements.length === 0">
@@ -527,31 +518,93 @@
       </div>
 
       <!-- Settlements Pagination -->
-      <div class="pagination-bar px-3 py-2" *ngIf="filteredSettlements.length > 0">
-        <small class="text-muted">
-          {{ lang.t('pagination_showing') }} {{ settlementsStartEntry }}–{{ settlementsEndEntry }}
-          {{ lang.t('pagination_of') }} {{ filteredSettlements.length }} {{ lang.t('pagination_entries') }}
-        </small>
-        <nav>
-          <ul class="pagination pagination-sm mb-0">
-            <li class="page-item" [class.disabled]="settlementsPage === 1">
-              <button class="page-link" (click)="prevSettlementsPage()">
-                <i class="bi bi-chevron-left"></i>
-              </button>
-            </li>
-            <li class="page-item" *ngFor="let p of getSettlementsPages()"
-                [class.active]="p === settlementsPage">
-              <button class="page-link" (click)="goToSettlementsPage(p)">{{ p }}</button>
-            </li>
-            <li class="page-item" [class.disabled]="settlementsPage === totalSettlementsPages">
-              <button class="page-link" (click)="nextSettlementsPage()">
-                <i class="bi bi-chevron-right"></i>
-              </button>
-            </li>
-          </ul>
-        </nav>
+      <div class="pagination-bar" *ngIf="filteredSettlements.length > 0">
+        <div class="pagination-info">
+          Showing <strong>{{ settlementsStartEntry }}</strong>–<strong>{{ settlementsEndEntry }}</strong> of <strong>{{ filteredSettlements.length }}</strong> records
+        </div>
+        <div class="pagination-controls">
+          <button class="pagination-btn nav-btn" (click)="prevSettlementsPage()" [disabled]="settlementsPage === 1">
+            <i class="bi bi-chevron-left"></i> Prev
+          </button>
+          <ng-container *ngFor="let p of getSettlementsPages()">
+            <button class="pagination-btn" [class.active]="p === settlementsPage" (click)="goToSettlementsPage(p)">{{ p }}</button>
+          </ng-container>
+          <button class="pagination-btn nav-btn" (click)="nextSettlementsPage()" [disabled]="settlementsPage === totalSettlementsPages">
+            Next <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+        <div class="page-size-select">
+          Rows:
+          <select [(ngModel)]="settlementsPageSize" (ngModelChange)="onSettlementsPageSizeChange()">
+            <option [value]="5">5</option>
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       RENT HISTORY MODAL
+  ══════════════════════════════════════════════════════════ -->
+  <div class="modal fade show d-block" tabindex="-1" role="dialog" *ngIf="showRentHistoryModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content shadow-lg border-0">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold text-dark">
+            <i class="bi bi-clock-history me-2 text-primary"></i>Rent History for {{ selectedRenter?.renterName }}
+          </h5>
+          <button type="button" class="btn-close" aria-label="Close" (click)="closeRentHistoryModal()"></button>
+        </div>
+        <div class="modal-body p-4">
+          <p class="text-muted small mb-3">
+            If this renter joined a long time ago, their past rent changes might not be in the system. Add a historical rent record here (e.g. rent was ₹5,000 on 2023-01-01) to automatically recalculate their past ledger correctly.
+          </p>
+
+          <div class="table-responsive mb-4" *ngIf="rawRevisions.length > 0">
+            <table class="table table-sm align-middle table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Effective Date</th>
+                  <th class="text-end">Rent Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rev of rawRevisions">
+                  <td><i class="bi bi-calendar-event text-secondary me-2"></i>{{ rev.effectiveDate }}</td>
+                  <td class="text-end fw-semibold">₹{{ rev.rentAmount | number }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="alert alert-info py-2 small" *ngIf="rawRevisions.length === 0">
+            No rent history found. The ledger defaults to the current rent of ₹{{ selectedRenter?.monthlyRent | number }}.
+          </div>
+
+          <form #revisionForm="ngForm" (ngSubmit)="saveRentRevision()" class="bg-light p-3 rounded border">
+            <h6 class="fw-bold mb-3">Add Past Rent Record</h6>
+            <div class="row g-2 align-items-end">
+              <div class="col-md-6">
+                <label class="form-label small">Effective Date</label>
+                <input type="date" class="form-control form-control-sm" name="effectiveDate" [(ngModel)]="newRevision.effectiveDate" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small">Rent Amount (₹)</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">₹</span>
+                  <input type="number" class="form-control" name="rentAmount" [(ngModel)]="newRevision.rentAmount" min="0" required>
+                  <button class="btn btn-primary" type="submit" [disabled]="!revisionForm.valid">Add</button>
+                </div>
+              </div>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop modal-backdrop-custom fade show d-block" *ngIf="showRentHistoryModal"></div>
 
 </div>

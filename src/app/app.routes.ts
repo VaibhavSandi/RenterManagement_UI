@@ -27,8 +27,8 @@ export const routes: Routes = [
         loadComponent: () => import('./components/rent-payment/rent-payment.component').then(m => m.RentPaymentComponent)
       },
       {
-        path: 'transactions',
-        loadComponent: () => import('./components/transaction-history/transaction-history.component').then(m => m.TransactionHistoryComponent)
+        path: 'parking',
+        loadComponent: () => import('./components/parking-details/parking-details.component').then(m => m.ParkingDetailsComponent)
       },
       {
         path: 'pending',
@@ -41,6 +41,10 @@ export const routes: Routes = [
       {
         path: 'reports',
         loadComponent: () => import('./components/reports/reports.component').then(m => m.ReportsComponent)
+      },
+      {
+        path: 'expenses',
+        loadComponent: () => import('./components/expense-master/expense-master.component').then(m => m.ExpenseMasterComponent)
       }
     ]
   },

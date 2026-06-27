@@ -29,6 +29,10 @@ export class FlatMasterComponent implements OnInit, OnDestroy {
   // Sort state
   sortConfig: SortConfig = { column: '', direction: '' };
 
+  // Pagination state
+  currentPage = 1;
+  pageSize = 10;
+
   private langSub!: Subscription;
 
   constructor(
@@ -140,6 +144,7 @@ export class FlatMasterComponent implements OnInit, OnDestroy {
   // ── Sort ────────────────────────────────────────────────────────
   onSort(column: string): void {
     this.sortConfig = toggleSort(this.sortConfig, column);
+    this.currentPage = 1;
     this.cdr.markForCheck();
   }
 
@@ -147,9 +152,14 @@ export class FlatMasterComponent implements OnInit, OnDestroy {
     return sortIcon(this.sortConfig, column);
   }
 
+  minVal(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
   resetFilters(): void {
     this.filterSearch = '';
     this.filterStatus = '';
+    this.currentPage = 1;
     this.cdr.markForCheck();
   }
 
@@ -157,8 +167,8 @@ export class FlatMasterComponent implements OnInit, OnDestroy {
     return this.filterSearch.trim().length > 0 || this.filterStatus.length > 0;
   }
 
-  // ── Computed list ──────────────────────────────────────────────
-  get displayedFlats(): Flat[] {
+  // ── Computed list (all filtered + sorted, pre-pagination) ──────
+  get filteredFlats(): Flat[] {
     let result = this.flats;
 
     // Filter by search
@@ -177,6 +187,34 @@ export class FlatMasterComponent implements OnInit, OnDestroy {
 
     // Sort
     return sortArray(result, this.sortConfig.column, this.sortConfig.direction);
+  }
+
+  // ── Paginated slice ────────────────────────────────────────────
+  get displayedFlats(): Flat[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredFlats.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredFlats.length / this.pageSize));
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    for (let i = 1; i <= this.totalPages; i++) pages.push(i);
+    return pages;
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.cdr.markForCheck();
+  }
+
+  changePageSize(size: number): void {
+    this.pageSize = size;
+    this.currentPage = 1;
+    this.cdr.markForCheck();
   }
 
   get occupiedCount(): number {

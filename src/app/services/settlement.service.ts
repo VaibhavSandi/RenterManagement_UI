@@ -14,7 +14,7 @@ import { Settlement } from '../models/settlement.model';
 })
 export class SettlementService {
 
-  private apiUrl = `${environment.apiUrl}/settlements`;
+  private apiUrl = `${environment.apiUrl}/api/settlements`;
 
       private username = 'admin';
   private password = 'admin123';

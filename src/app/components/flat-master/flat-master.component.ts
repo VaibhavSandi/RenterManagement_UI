@@ -65,7 +65,7 @@ export class FlatMasterComponent implements OnInit, OnDestroy {
   }
 
   getEmptyFlat(): Flat {
-    return { flatId: 0, flatNo: '', buildingName: '', monthlyRent: 0, depositAmount: 0, status: 'Vacant' };
+    return { flatId: 0, flatNo: '', buildingName: '', meterNo: '', monthlyRent: 0, depositAmount: 0, status: 'Vacant' };
   }
 
   openAddModal(): void {

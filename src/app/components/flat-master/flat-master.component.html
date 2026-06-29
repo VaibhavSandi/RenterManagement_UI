@@ -73,6 +73,10 @@
                 {{ lang.t('flat_col_building') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('buildingName') }}"></i>
               </th>
+              <th class="sortable-th" (click)="onSort('meterNo')">
+                {{ lang.t('flat_col_meter') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('meterNo') }}"></i>
+              </th>
               <th class="sortable-th" (click)="onSort('monthlyRent')">
                 {{ lang.t('flat_col_rent') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('monthlyRent') }}"></i>
@@ -93,6 +97,7 @@
               <td class="text-muted">{{ i + 1 }}</td>
               <td class="fw-semibold">{{ flat.flatNo }}</td>
               <td>{{ flat.buildingName }}</td>
+              <td>{{ flat.meterNo || '-' }}</td>
               <td class="fw-medium">{{ formatCurrency(flat.monthlyRent) }}</td>
               <td>{{ formatCurrency(flat.depositAmount) }}</td>
               <td>
@@ -116,7 +121,7 @@
               </td>
             </tr>
             <tr *ngIf="displayedFlats.length === 0">
-              <td colspan="7" class="text-center text-muted py-5">
+              <td colspan="8" class="text-center text-muted py-5">
                 <i class="bi bi-inbox display-4 d-block mb-2"></i>
                 {{ lang.t('flat_no_data') }}
               </td>
@@ -187,6 +192,13 @@
               <label for="buildingName" class="form-label">{{ lang.t('flat_lbl_building') }} <span class="text-danger">*</span></label>
               <input type="text" class="form-control" id="buildingName" name="buildingName"
                 [(ngModel)]="currentFlat.buildingName" required [placeholder]="lang.t('flat_ph_building')">
+            </div>
+
+            <!-- Meter No -->
+            <div class="col-md-6">
+              <label for="meterNo" class="form-label">{{ lang.t('flat_lbl_meter') }}</label>
+              <input type="text" class="form-control" id="meterNo" name="meterNo"
+                [(ngModel)]="currentFlat.meterNo" [placeholder]="lang.t('flat_ph_meter')">
             </div>
 
             <!-- Monthly Rent -->

@@ -17,7 +17,7 @@ export interface DashboardResponse {
 })
 export class ParkingService {
 
-  private apiUrl = `${environment.apiUrl}/parking`;
+  private apiUrl = `${environment.apiUrl}/api/parking`;
 
   private headers = {
     Authorization: 'Basic ' + btoa('admin:admin123')

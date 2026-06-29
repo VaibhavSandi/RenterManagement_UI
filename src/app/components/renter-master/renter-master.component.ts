@@ -90,6 +90,7 @@ export class RenterMasterComponent implements OnInit, OnDestroy {
       idProofNo: '',
       flatId: null,
       flatNo: '',
+      meterNo: '',
       joiningDate: '',
       monthlyRent: 0,
       depositPaid: 0,

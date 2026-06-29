@@ -9,7 +9,7 @@ import { Expense } from '../models/expense.model';
 })
 export class ExpenseService {
 
-  private apiUrl = `${environment.apiUrl}/expenses`;
+  private apiUrl = `${environment.apiUrl}/api/expenses`;
   private username = 'admin';
   private password = 'admin123';
   private headers = {

@@ -11,7 +11,7 @@ import { RentRevision } from '../models/rent-revision.model';
 })
 export class RenterService {
 
-  private apiUrl = `${environment.apiUrl}/renters`;
+  private apiUrl = `${environment.apiUrl}/api/renters`;
 
      private username = 'admin';
   private password = 'admin123';

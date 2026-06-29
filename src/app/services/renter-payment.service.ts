@@ -11,7 +11,7 @@ import { PendingRenters } from '../models/PendingRenters.model';
 })
 export class RenterPaymentService {
 
-  private apiUrl = `${environment.apiUrl}/rent-payments`;
+  private apiUrl = `${environment.apiUrl}/api/rent-payments`;
 
   private username = 'admin';
   private password = 'admin123';

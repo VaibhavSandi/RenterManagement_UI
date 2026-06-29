@@ -11,7 +11,7 @@ import { environment } from '../../environments/environment';
 })
 export class FlatService {
 
-  private apiUrl = `${environment.apiUrl}/flat`;
+  private apiUrl = `${environment.apiUrl}/api/flat`;
 
       private username = 'admin';
   private password = 'admin123';

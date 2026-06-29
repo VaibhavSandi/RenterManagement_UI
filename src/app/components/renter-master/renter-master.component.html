@@ -56,6 +56,10 @@
                 {{ lang.t('renter_col_flat') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('flatNo') }}"></i>
               </th>
+              <th class="sortable-th" (click)="onSort('meterNo')">
+                {{ lang.t('renter_col_meter') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('meterNo') }}"></i>
+              </th>
               <th class="sortable-th" (click)="onSort('monthlyRent')">
                 {{ lang.t('renter_col_rent') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('monthlyRent') }}"></i>
@@ -81,6 +85,7 @@
               <td class="fw-semibold">{{ renter.renterName }}</td>
               <td class="d-none d-md-table-cell">{{ renter.mobileNumber }}</td>
               <td>{{ renter.flatNo }}</td>
+              <td>{{ renter.meterNo || '-' }}</td>
               <td>₹{{ renter.monthlyRent | number }}</td>
               <td class="d-none d-md-table-cell">₹{{ renter.depositPaid | number }}</td>
               <td>
@@ -108,7 +113,7 @@
               </td>
             </tr>
             <tr *ngIf="displayedRenters.length === 0">
-              <td colspan="9" class="text-center text-muted py-4">
+              <td colspan="10" class="text-center text-muted py-4">
                 {{ lang.t('renter_no_data') }}
               </td>
             </tr>
@@ -276,6 +281,10 @@
           <div class="col-sm-6">
             <div class="detail-label">{{ lang.t('renter_detail_flat') }}</div>
             <div class="detail-value">{{ viewRenter.flatNo }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="detail-label">{{ lang.t('renter_detail_meter') }}</div>
+            <div class="detail-value">{{ viewRenter.meterNo || '-' }}</div>
           </div>
           <div class="col-sm-6">
             <div class="detail-label">Parking No.</div>

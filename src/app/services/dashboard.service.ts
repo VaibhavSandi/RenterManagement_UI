@@ -15,7 +15,7 @@ export interface DashboardResponse {
 })
 export class DashboardService {
 
-  private apiUrl = `${environment.apiUrl}/dashboard`;
+  private apiUrl = `${environment.apiUrl}/api/dashboard`;
 
   private headers = {
     Authorization: 'Basic ' + btoa('admin:admin123')

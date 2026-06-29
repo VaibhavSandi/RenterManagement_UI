@@ -5,6 +5,7 @@ export interface Renter {
   idProofNo: string;
   flatId: number | null;
   flatNo?: string;
+  meterNo?: string;
   joiningDate: string;
   monthlyRent: number;
   depositPaid: number;

@@ -60,7 +60,7 @@ export class RenterPaymentService {
   }
 
   getpendingRenter(): Observable<PendingRenters[]> {
-    return this.http.get<PendingRenters[]>(`http://localhost:8080/api/pending-rents`, {
+    return this.http.get<PendingRenters[]>(`${environment.apiUrl}/api/pending-rents`, {
       headers: this.headers
     });
   }

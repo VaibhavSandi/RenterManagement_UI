@@ -12,12 +12,12 @@
     <!-- Sidebar Header -->
     <div class="sidebar-header">
       <div class="d-flex align-items-center">
-        <div class="sidebar-logo-icon me-2">
-          <i class="bi bi-house-door-fill"></i>
+        <div class="sidebar-logo-icon me-3 shadow-lg">
+          <i class="bi bi-buildings-fill"></i>
         </div>
         <div>
-          <h6 class="mb-0 fw-bold text-white">Family Rent</h6>
-          <small class="text-white-50" style="font-size: 0.7rem;">Manager</small>
+          <h5 class="mb-0 fw-bolder text-white" style="letter-spacing: 0.5px;">Family Rent</h5>
+          <small class="text-white-50 fw-semibold" style="font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Manager</small>
         </div>
       </div>
       <button class="btn btn-link text-white-50 p-0 sidebar-close-btn" (click)="toggleSidebar()" aria-label="Close sidebar">
@@ -65,6 +65,10 @@
             <i class="bi bi-list fs-4"></i>
           </button>
           <h5 class="mb-0 fw-semibold text-dark d-none d-md-block">Family Rent Manager</h5>
+          <div class="ms-4 d-none d-lg-flex align-items-center text-muted fw-medium" style="font-size: 0.9rem;">
+            <i class="bi bi-clock me-2 text-primary"></i>
+            {{ currentDate | date:'medium' }}
+          </div>
         </div>
 
         <!-- Right: Language Toggle + User Dropdown -->
@@ -80,6 +84,16 @@
             <span class="lang-current">{{ lang.t('lang_name') }}</span>
             <span class="lang-sep">|</span>
             <span class="lang-other">{{ lang.t('lang_toggle') }}</span>
+          </button>
+
+          <!-- Theme Toggle Button -->
+          <button
+            class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
+            style="width: 36px; height: 36px; transition: all 0.3s ease;"
+            (click)="toggleTheme()"
+            [title]="currentTheme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'"
+          >
+            <i class="bi fs-5" [ngClass]="currentTheme === 'light' ? 'bi-moon-fill text-dark' : 'bi-sun-fill text-warning'"></i>
           </button>
 
           <!-- User Dropdown -->

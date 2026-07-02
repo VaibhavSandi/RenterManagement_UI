@@ -6,9 +6,12 @@
 
 /* ── Sidebar ── */
 .sidebar {
-  width: 260px;
+  width: 280px;
   min-height: 100vh;
-  background: #1e293b;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -16,7 +19,7 @@
   left: 0;
   bottom: 0;
   z-index: 1040;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-header {
@@ -28,15 +31,21 @@
 }
 
 .sidebar-logo-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-logo-icon:hover {
+  transform: scale(1.05) rotate(-5deg);
 }
 
 /* ── Sidebar Navigation ── */
@@ -66,8 +75,8 @@
 
 .sidebar-nav .nav-link.active {
   color: #fff;
-  background: rgba(255, 255, 255, 0.1);
-  border-left-color: #667eea;
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.15) 0%, transparent 100%);
+  border-left-color: var(--primary);
 }
 
 .sidebar-nav .nav-icon {
@@ -87,7 +96,7 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   color: #fff;
   display: flex;
   align-items: center;
@@ -99,25 +108,27 @@
 /* ── Main Wrapper ── */
 .main-wrapper {
   flex: 1;
-  margin-left: 260px;
+  margin-left: 280px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ── Top Header ── */
 .top-header {
-  height: 60px;
-  background: #fff;
-  border-bottom: 1px solid #e2e8f0;
+  height: 72px;
+  background: var(--white);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--gray-200);
   display: flex;
   align-items: center;
-  padding: 0 1.5rem;
+  padding: 0 2rem;
   position: sticky;
   top: 0;
   z-index: 1030;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
 }
 
 .hamburger-btn {
@@ -131,16 +142,16 @@
 
 /* ── User Dropdown ── */
 .user-dropdown-btn {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--gray-200);
   border-radius: 10px;
   padding: 0.35rem 0.75rem;
-  background: #fff;
+  background: var(--white);
   transition: all 0.15s ease;
 }
 
 .user-dropdown-btn:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: var(--gray-50);
+  border-color: var(--gray-300);
 }
 
 .user-avatar {
@@ -160,10 +171,10 @@
   position: absolute;
   right: 0;
   top: calc(100% + 8px);
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
   border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-md);
   min-width: 200px;
   z-index: 1050;
   padding: 0.5rem 0;
@@ -199,14 +210,14 @@
 }
 
 .dropdown-item-custom:hover {
-  background: #fef2f2;
+  background: rgba(244, 63, 94, 0.1);
 }
 
 /* ── Content Area ── */
 .content-area {
   flex: 1;
   padding: 1.5rem;
-  background: #f1f5f9;
+  background: var(--content-bg);
 }
 
 /* ── Sidebar Backdrop (mobile) ── */

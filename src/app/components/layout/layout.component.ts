@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { MockDataService } from '../../services/mock-data.service';
 import { LanguageService } from '../../services/language.service';
+import { ThemeService } from '../../services/theme.service';
 import { Subscription } from 'rxjs';
 
 interface NavItem {
@@ -27,6 +28,10 @@ export class LayoutComponent implements OnInit, OnDestroy {
   userDropdownOpen = false;
   currentLang = 'en';
   navItems: NavItem[] = [];
+  currentDate: Date = new Date();
+  private clockTimer: any;
+  currentTheme = 'light';
+  private themeSub!: Subscription;
   private langSub!: Subscription;
 
   constructor(
@@ -34,6 +39,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     private router: Router,
     public lang: LanguageService,
     private cdr: ChangeDetectorRef,
+    public themeService: ThemeService,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -62,10 +68,26 @@ export class LayoutComponent implements OnInit, OnDestroy {
       this.buildNavItems();
       this.cdr.markForCheck();
     });
+
+    this.themeSub = this.themeService.theme$.subscribe((theme: string) => {
+      this.currentTheme = theme;
+      this.cdr.markForCheck();
+    });
+
+    if (this.isBrowser) {
+      this.clockTimer = setInterval(() => {
+        this.currentDate = new Date();
+        this.cdr.markForCheck();
+      }, 1000);
+    }
   }
 
   ngOnDestroy(): void {
     this.langSub?.unsubscribe();
+    this.themeSub?.unsubscribe();
+    if (this.clockTimer) {
+      clearInterval(this.clockTimer);
+    }
   }
 
   private buildNavItems(): void {
@@ -117,5 +139,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   toggleLanguage(): void {
     this.lang.toggle();
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
   }
 }

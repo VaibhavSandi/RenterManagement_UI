@@ -23,7 +23,7 @@ export class RenterPaymentService {
   constructor(private http: HttpClient) {}
 
   getAllRentPayments(): Observable<RentPayment[]> {
-    return this.http.get<RentPayment[]>(`${this.apiUrl}/current-month-payments`, {
+    return this.http.get<RentPayment[]>(`${this.apiUrl}/getAllPayments`, {
       headers: this.headers
     });
   }

@@ -44,10 +44,10 @@
           </div>
           <div class="col-md-6">
             <label class="form-label">{{ lang.t('payment_lbl_month') }} <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="payment.month" name="month" required>
-              <option value="" disabled>{{ lang.t('payment_ph_month') }}</option>
-              <option *ngFor="let m of months" [value]="m">{{ m }}</option>
-            </select>
+            <input type="month" class="form-control" [(ngModel)]="payment.month" name="month" required>
+            <small class="text-muted d-block mt-1" *ngIf="getCycleText()">
+              <i class="bi bi-info-circle me-1"></i> Cycle: <strong>{{ getCycleText() }}</strong>
+            </small>
           </div>
           <div class="col-md-4">
             <label class="form-label">{{ lang.t('payment_lbl_amount') }} <span class="text-danger">*</span></label>
@@ -183,7 +183,7 @@
               <td class="text-muted fw-semibold">{{ i + 1 }}</td>
               <td class="fw-semibold">{{ p.renterName }}</td>
               <td><span class="info-pill info-pill-primary">{{ p.flatNo }}</span></td>
-              <td>{{ p.rentMonth }}</td>
+              <td style="white-space: nowrap; font-size: 0.9em;">{{ getCycleForPayment(p) }}</td>
               <td class="text-success fw-bold">₹{{ p.amountPaid | number }}</td>
               <td>{{ p.paymentDate }}</td>
               <td class="d-none d-md-table-cell">

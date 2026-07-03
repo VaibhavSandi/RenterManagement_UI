@@ -21,6 +21,7 @@ import { RenterService } from '../../services/renter.service';
 })
 export class RentPaymentComponent implements OnInit, OnDestroy {
   activeRenters: Renter[] = [];
+  allRenters: Renter[] = [];
   payments: RentPayment[] = [];
   showSuccess = false;
   private langSub!: Subscription;
@@ -45,11 +46,7 @@ export class RentPaymentComponent implements OnInit, OnDestroy {
   currentPage = 1;
   pageSize = 10;
 
-  months: string[] = [
-    'January 2026', 'February 2026', 'March 2026', 'April 2026',
-    'May 2026', 'June 2026', 'July 2026', 'August 2026',
-    'September 2026', 'October 2026', 'November 2026', 'December 2026'
-  ];
+
 
   payment: any = {
     renterId: 0,
@@ -76,6 +73,7 @@ export class RentPaymentComponent implements OnInit, OnDestroy {
 
       next: (data) => {
 
+        this.allRenters = data;
         this.activeRenters = data.filter(r => r.status === 'Active');
         this.cdr.markForCheck();
 
@@ -165,14 +163,16 @@ export class RentPaymentComponent implements OnInit, OnDestroy {
   }
 
   submitPayment(): void {
+    const monthVal = this.payment.month || '';
+    const [yearStr, monthStr] = monthVal.includes('-') ? monthVal.split('-') : [new Date().getFullYear().toString(), (new Date().getMonth() + 1).toString()];
 
 const payload: RentPayment = {
   renterId: +this.payment.renterId,
   renterName: this.payment.renterName,
   flatId: this.activeRenters.find(r => r.renterId === +this.payment.renterId)?.flatId!,
   flatNo: this.payment.flatNo,
-  rentMonth: this.months.indexOf(this.payment.month) + 1,
-  rentYear: new Date().getFullYear(),
+  rentMonth: parseInt(monthStr, 10),
+  rentYear: parseInt(yearStr, 10),
   monthlyRent: this.payment.amountPaid,
   amountPaid: this.payment.amountPaid,
   paymentDate: this.payment.paymentDate,
@@ -207,6 +207,44 @@ const payload: RentPayment = {
       this.showSuccess = false;
       this.cdr.markForCheck();
     }, 3000);
+  }
+
+  getCycleText(): string {
+    if (!this.payment.renterId || !this.payment.month) return '';
+    const renter = this.activeRenters.find(r => r.renterId === +this.payment.renterId);
+    if (!renter || !renter.joiningDate) return '';
+
+    const joinDateObj = new Date(renter.joiningDate);
+    if (isNaN(joinDateObj.getTime())) return '';
+    const joinDay = joinDateObj.getDate();
+    
+    const [yearStr, monthStr] = this.payment.month.split('-');
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10) - 1; 
+
+    const startDate = new Date(year, month, joinDay);
+    const endDate = new Date(year, month + 1, joinDay);
+
+    return `${startDate.getDate()} ${this.getMonthName(startDate.getMonth())} ${startDate.getFullYear()} - ${endDate.getDate()} ${this.getMonthName(endDate.getMonth())} ${endDate.getFullYear()}`;
+  }
+
+  getMonthName(m: number): string {
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return monthNames[m];
+  }
+
+  getCycleForPayment(p: RentPayment): string {
+    const renter = this.allRenters.find(r => r.renterId === p.renterId);
+    if (renter && renter.joiningDate) {
+      const joinDateObj = new Date(renter.joiningDate);
+      if (!isNaN(joinDateObj.getTime())) {
+        const joinDay = joinDateObj.getDate();
+        const startDate = new Date(p.rentYear, p.rentMonth - 1, joinDay);
+        const endDate = new Date(p.rentYear, p.rentMonth, joinDay);
+        return `${startDate.getDate()} ${this.getMonthName(startDate.getMonth())} ${startDate.getFullYear().toString().slice(-2)} - ${endDate.getDate()} ${this.getMonthName(endDate.getMonth())} ${endDate.getFullYear().toString().slice(-2)}`;
+      }
+    }
+    return `${p.rentMonth}/${p.rentYear}`;
   }
 
   // ── Sort ────────────────────────────────────────────────────────

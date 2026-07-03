@@ -287,7 +287,7 @@ loadLedger(renterId: number): void {
   buildTransactionLedgerFromApi(): void {
     if (!this.selectedRenter || !this.selectedRenter.joiningDate) return;
     
-    const [joinYear, joinMonth] = this.selectedRenter.joiningDate.split('-').map(Number);
+    const [joinYear, joinMonth, joinDay] = this.selectedRenter.joiningDate.split('-').map(Number);
     const today = new Date();
     
     // Use leavingDate if set, else fallback to current month
@@ -308,7 +308,9 @@ loadLedger(renterId: number): void {
 
     while (currentYear < endYear || (currentYear === endYear && currentMonth <= endMonth)) {
       const monthKey = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
-      const monthName = new Date(currentYear, currentMonth - 1, 1).toLocaleString('en-IN', { month: 'long', year: 'numeric' });
+      const startDate = new Date(currentYear, currentMonth - 1, joinDay);
+      const endDate = new Date(currentYear, currentMonth, joinDay);
+      const monthName = `${startDate.getDate()} ${this.getMonthName(startDate.getMonth())} ${startDate.getFullYear().toString().slice(-2)} - ${endDate.getDate()} ${this.getMonthName(endDate.getMonth())} ${endDate.getFullYear().toString().slice(-2)}`;
       
       const monthPayments = this.rawPayments.filter(p => p.rentYear === currentYear && p.rentMonth === currentMonth);
       
@@ -376,6 +378,11 @@ loadLedger(renterId: number): void {
   onLeavingDateChange(): void {
     this.buildTransactionLedgerFromApi();
     this.cdr.markForCheck();
+  }
+
+  getMonthName(m: number): string {
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return monthNames[m];
   }
 
   // ────────── REFUND CALCULATION ─────────────────────────────

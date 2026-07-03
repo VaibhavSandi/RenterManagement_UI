@@ -148,9 +148,9 @@
           <thead class="table-dark">
             <tr>
               <th>{{ lang.t('lbl_no') }}</th>
-              <th class="sortable-th" (click)="onLedgerSort('month')">
+              <th class="sortable-th" (click)="onLedgerSort('monthKey')">
                 {{ lang.t('settlement_col_month') }}
-                <i class="bi ms-1 sort-icon {{ ledgerSortIcon('month') }}"></i>
+                <i class="bi ms-1 sort-icon {{ ledgerSortIcon('monthKey') }}"></i>
               </th>
               <th class="sortable-th text-end" (click)="onLedgerSort('expectedRent')">
                 {{ lang.t('settlement_col_expected') }}
@@ -175,7 +175,7 @@
                 [class.row-partial]="entry.status === 'Partial'"
                 [class.row-unpaid]="entry.status === 'Unpaid'">
               <td class="text-muted">{{ (ledgerPage - 1) * ledgerPageSize + i + 1 }}</td>
-              <td class="fw-semibold">{{ entry.month }}</td>
+              <td class="fw-semibold" style="white-space: nowrap; font-size: 0.9em;">{{ entry.month }}</td>
               <td class="text-end fw-semibold">₹{{ entry.expectedRent | number }}</td>
               <td class="text-end text-success fw-semibold">
                 {{ entry.amountPaid > 0 ? '₹' + (entry.amountPaid | number) : '—' }}

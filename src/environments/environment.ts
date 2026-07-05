@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: '/rent-management-api-0.0.1-SNAPSHOT'
+  apiUrl: 'https://rentmanagementsystem-backend-2.onrender.com'
 
   // apiUrl:'http://localhost:8080/rent-management-api-0.0.1-SNAPSHOT/api'
 

@@ -1,0 +1,19 @@
+export interface Renter {
+  renterId?: number;
+  renterName: string;
+  mobileNumber: string;
+  email?: string;
+  idProofNo: string;
+  flatId: number | null;
+  flatNo?: string;
+  meterNo?: string;
+  joiningDate: string;
+  monthlyRent: number;
+  depositPaid: number;
+  parkingNo: number;
+  status: string;
+
+ parkingId?:number;
+ parkingNumber?:number;
+ isOccupied:boolean;
+}

@@ -1,4 +1,14 @@
 <div class="login-wrapper d-flex align-items-center justify-content-center">
+  <!-- Language Toggle on Login -->
+  <div class="login-lang-toggle">
+    <button class="btn lang-toggle-btn" (click)="lang.toggle()">
+      <i class="bi bi-translate me-1"></i>
+      <span>{{ lang.t('lang_name') }}</span>
+      <span class="lang-sep">|</span>
+      <span>{{ lang.t('lang_toggle') }}</span>
+    </button>
+  </div>
+
   <div class="login-card card border-0">
     <div class="card-body p-4 p-md-5">
       <!-- App Icon & Title -->
@@ -6,8 +16,8 @@
         <div class="app-icon-wrapper mb-3">
           <i class="bi bi-house-door-fill"></i>
         </div>
-        <h3 class="fw-bold text-dark mb-1">Family Rent Manager</h3>
-        <p class="text-muted small">Sign in to manage your properties</p>
+        <h3 class="fw-bold text-dark mb-1">{{ lang.t('login_title') }}</h3>
+        <p class="text-muted small">{{ lang.t('login_subtitle') }}</p>
       </div>
 
       <!-- Error Alert -->
@@ -20,7 +30,7 @@
       <!-- Login Form -->
       <form (ngSubmit)="onLogin()" #loginForm="ngForm">
         <div class="mb-3">
-          <label for="username" class="form-label fw-semibold small text-muted">Username</label>
+          <label for="username" class="form-label fw-semibold small text-muted">{{ lang.t('login_username') }}</label>
           <div class="input-group">
             <span class="input-group-text bg-light border-end-0">
               <i class="bi bi-person text-muted"></i>
@@ -29,7 +39,7 @@
               type="text"
               class="form-control border-start-0 ps-0"
               id="username"
-              placeholder="Enter your username"
+              [placeholder]="lang.t('login_ph_username')"
               [(ngModel)]="username"
               name="username"
               required
@@ -39,7 +49,7 @@
         </div>
 
         <div class="mb-4">
-          <label for="password" class="form-label fw-semibold small text-muted">Password</label>
+          <label for="password" class="form-label fw-semibold small text-muted">{{ lang.t('login_password') }}</label>
           <div class="input-group">
             <span class="input-group-text bg-light border-end-0">
               <i class="bi bi-lock text-muted"></i>
@@ -48,7 +58,7 @@
               type="password"
               class="form-control border-start-0 ps-0"
               id="password"
-              placeholder="Enter your password"
+              [placeholder]="lang.t('login_ph_password')"
               [(ngModel)]="password"
               name="password"
               required
@@ -63,11 +73,11 @@
           [disabled]="isLoading || !username || !password"
         >
           <span *ngIf="!isLoading">
-            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+            <i class="bi bi-box-arrow-in-right me-2"></i>{{ lang.t('login_btn') }}
           </span>
           <span *ngIf="isLoading">
             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-            Signing in...
+            {{ lang.t('login_loading') }}
           </span>
         </button>
       </form>

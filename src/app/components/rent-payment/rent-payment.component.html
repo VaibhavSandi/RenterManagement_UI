@@ -1,135 +1,376 @@
 <div class="container-fluid py-4">
   <!-- Page Header -->
-  <div class="mb-4">
+  <div class="d-flex align-items-center justify-content-between mb-4">
     <h2 class="page-title mb-0">
-      <i class="bi bi-cash-stack me-2"></i>Add Rent Payment
+      <i class="bi bi-cash-stack me-2"></i>{{ lang.t('payment_title') }}
     </h2>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-success" (click)="exportToExcel()">
+        <i class="bi bi-file-earmark-excel"></i> Export to Excel
+      </button>
+      <button class="btn btn-outline-primary" (click)="toggleFilter()" [class.active]="isFilterOpen || isFilterApplied">
+        <i class="bi bi-funnel"></i> {{ isFilterOpen ? 'Close Filter' : 'Advanced Filter' }}
+      </button>
+    </div>
   </div>
 
   <!-- Success Alert -->
-  <div class="alert alert-success alert-dismissible fade show d-flex align-items-center"
+  <div class="alert alert-success d-flex align-items-center"
     *ngIf="showSuccess" role="alert">
     <i class="bi bi-check-circle-fill me-2 fs-5"></i>
-    <strong>Payment recorded successfully!</strong>
-    <button type="button" class="btn-close" (click)="showSuccess = false"></button>
+    <strong>{{ lang.t('payment_success') }}</strong>
+    <button type="button" class="btn-close ms-auto" (click)="showSuccess = false"></button>
+  </div>
+
+  <!-- Error Alert -->
+  <div class="alert alert-danger d-flex align-items-center" *ngIf="errorMessage" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+    <strong>{{ errorMessage }}</strong>
+    <button type="button" class="btn-close ms-auto" (click)="errorMessage = ''"></button>
   </div>
 
   <!-- Payment Form Card -->
-  <div class="card shadow-sm mb-4">
+  <div class="card mb-4" *ngIf="!isFilterOpen && !isFilterApplied">
     <div class="card-header">
       <h5 class="card-header-title mb-0">
-        <i class="bi bi-receipt me-2"></i>Payment Details
+        <i class="bi bi-receipt text-primary"></i>{{ lang.t('payment_details') }}
       </h5>
     </div>
     <div class="card-body">
       <form (ngSubmit)="submitPayment()">
         <div class="row g-3">
-          <!-- Select Renter -->
           <div class="col-md-6">
-            <label class="form-label">Select Renter <span class="text-danger">*</span></label>
+            <label class="form-label">{{ lang.t('payment_lbl_renter') }} <span class="text-danger">*</span></label>
             <select class="form-select" [(ngModel)]="payment.renterId"
               name="renterId" required (ngModelChange)="onRenterChange()">
-              <option [ngValue]="0" disabled>-- Choose Renter --</option>
-              <option *ngFor="let renter of activeRenters" [ngValue]="renter.id">
+              <option [ngValue]="0" disabled>{{ lang.t('payment_ph_renter') }}</option>
+              <option *ngFor="let renter of activeRenters" [ngValue]="renter.renterId">
                 {{ renter.renterName }} ({{ renter.flatNo }})
               </option>
             </select>
           </div>
-          <!-- Select Month -->
           <div class="col-md-6">
-            <label class="form-label">Select Month <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="payment.month" name="month" required>
-              <option value="" disabled>-- Choose Month --</option>
-              <option *ngFor="let m of months" [value]="m">{{ m }}</option>
-            </select>
+            <label class="form-label">{{ lang.t('payment_lbl_month') }} <span class="text-danger">*</span></label>
+            <input type="month" class="form-control" [(ngModel)]="payment.month" name="month" required>
+            <small class="text-muted d-block mt-1" *ngIf="getCycleText()">
+              <i class="bi bi-info-circle me-1"></i> Cycle: <strong>{{ getCycleText() }}</strong>
+            </small>
           </div>
-          <!-- Amount Paid -->
           <div class="col-md-4">
-            <label class="form-label">Amount Paid (₹) <span class="text-danger">*</span></label>
+            <label class="form-label">{{ lang.t('payment_lbl_amount') }} <span class="text-danger">*</span></label>
             <input type="number" class="form-control" [(ngModel)]="payment.amountPaid"
               name="amountPaid" required placeholder="0">
           </div>
-          <!-- Payment Date -->
           <div class="col-md-4">
-            <label class="form-label">Payment Date <span class="text-danger">*</span></label>
-            <input type="date" class="form-control" [(ngModel)]="payment.paymentDate"
+            <label class="form-label">{{ lang.t('payment_lbl_date') }} <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" [(ngModel)]="payment.paymentDate" [max]="todayKey"
               name="paymentDate" required>
           </div>
-          <!-- Payment Mode -->
           <div class="col-md-4">
-            <label class="form-label">Payment Mode</label>
+            <label class="form-label">{{ lang.t('payment_lbl_mode') }}</label>
             <select class="form-select" [(ngModel)]="payment.paymentMode" name="paymentMode">
-              <option value="Cash">Cash</option>
-              <option value="UPI">UPI</option>
-              <option value="Bank">Bank Transfer</option>
+              <option value="Cash">{{ lang.t('mode_cash') }}</option>
+              <option value="UPI">{{ lang.t('mode_upi') }}</option>
+              <option value="Bank">{{ lang.t('mode_bank') }}</option>
             </select>
           </div>
-          <!-- Remark -->
           <div class="col-12">
-            <label class="form-label">Remark</label>
+            <label class="form-label">{{ lang.t('payment_lbl_remark') }}</label>
             <textarea class="form-control" [(ngModel)]="payment.remark" name="remark"
-              rows="2" placeholder="Any notes about this payment..."></textarea>
+              rows="2" [placeholder]="lang.t('payment_ph_remark')"></textarea>
           </div>
         </div>
-
         <div class="d-flex justify-content-end mt-4">
           <button type="submit" class="btn btn-primary btn-lg">
-            <i class="bi bi-check2-circle me-1"></i> Submit Payment
+            <i class="bi bi-check2-circle me-1"></i> {{ lang.t('payment_submit') }}
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Recent Payments Table -->
-  <div class="card shadow-sm">
+  <!-- Monthly Rent Status (by rent month, not payment date) -->
+  <div class="card mb-4">
     <div class="card-header">
       <h5 class="card-header-title mb-0">
-        <i class="bi bi-clock-history me-2"></i>Recent Payments
+        <i class="bi bi-calendar-check text-primary"></i>{{ lang.t('month_status_title') }}
       </h5>
+      <span class="info-pill info-pill-primary" *ngIf="selectedRentMonthLabel">
+        {{ selectedRentMonthLabel }} {{ lang.t('month_status_rent') }}
+      </span>
     </div>
+
+    <div class="filter-bar" style="padding: 12px 16px 0;">
+      <div class="filter-bar-inner">
+        <div class="filter-select-wrap">
+          <i class="bi bi-calendar3 filter-select-icon"></i>
+          <input type="month" class="form-control filter-select" [(ngModel)]="selectedRentMonth"
+            (ngModelChange)="loadMonthStatus()" [max]="currentMonthKey"
+            [title]="lang.t('month_status_lbl_month')" />
+        </div>
+        <div class="filter-select-wrap">
+          <i class="bi bi-funnel filter-select-icon"></i>
+          <select class="form-select filter-select" [(ngModel)]="monthStatusFilter">
+            <option value="">{{ lang.t('lbl_all') }} {{ lang.t('lbl_status') }}</option>
+            <option value="Paid">{{ lang.t('status_paid') }}</option>
+            <option value="Partial">{{ lang.t('status_partial') }}</option>
+            <option value="Pending">{{ lang.t('status_pending') }}</option>
+          </select>
+        </div>
+        <div class="filter-search-wrap">
+          <i class="bi bi-search filter-search-icon"></i>
+          <input type="text" class="form-control filter-search-input"
+            [placeholder]="lang.t('lbl_search_placeholder')" [(ngModel)]="monthSearch" />
+        </div>
+        <button class="filter-reset-btn" (click)="resetMonthFilter()">
+          <i class="bi bi-x-circle"></i> {{ lang.t('btn_reset') }}
+        </button>
+        <span class="filter-count">{{ filteredMonthRows.length }} / {{ monthRows.length }}</span>
+      </div>
+      <small class="text-muted d-block mt-2" *ngIf="selectedCollectionMonthLabel">
+        <i class="bi bi-info-circle me-1"></i>
+        {{ lang.t('month_status_hint_prefix') }} <strong>{{ selectedRentMonthLabel }}</strong>
+        {{ lang.t('month_status_hint_middle') }} <strong>{{ selectedCollectionMonthLabel }}</strong>.
+      </small>
+    </div>
+
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover table-pro align-middle mb-0">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Renter</th>
-              <th>Flat No</th>
-              <th>Month</th>
-              <th>Amount</th>
-              <th>Date</th>
-              <th>Mode</th>
-              <th>Remark</th>
+              <th>{{ lang.t('lbl_no') }}</th>
+              <th>{{ lang.t('payment_col_renter') }}</th>
+              <th>{{ lang.t('payment_col_flat') }}</th>
+              <th>{{ lang.t('payment_col_month') }}</th>
+              <th class="text-end">{{ lang.t('month_status_col_rent') }}</th>
+              <th class="text-end">{{ lang.t('month_status_col_paid') }}</th>
+              <th class="text-end">{{ lang.t('month_status_col_pending') }}</th>
+              <th>{{ lang.t('payment_col_date') }}</th>
+              <th class="text-center">{{ lang.t('lbl_status') }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let p of payments; let i = index">
-              <td>{{ i + 1 }}</td>
-              <td class="fw-semibold">{{ p.renterName }}</td>
-              <td>{{ p.flatNo }}</td>
-              <td>{{ p.month }}</td>
-              <td class="text-success fw-semibold">₹{{ p.amountPaid | number }}</td>
-              <td>{{ p.paymentDate }}</td>
-              <td>
-                <span class="badge"
+            <tr *ngFor="let r of filteredMonthRows; let i = index">
+              <td class="text-muted fw-semibold">{{ i + 1 }}</td>
+              <td class="fw-semibold">{{ r.renterName }}</td>
+              <td><span class="info-pill info-pill-primary">{{ r.flatNo || '—' }}</span></td>
+              <td style="white-space: nowrap;">{{ r.rentPeriod }}</td>
+              <td class="text-end">₹{{ r.rentAmount | number }}</td>
+              <td class="text-end text-success fw-semibold">
+                ₹{{ r.paidAmount | number }}
+                <small class="d-block text-muted fw-normal" *ngIf="r.paymentCount > 1">
+                  {{ r.paymentCount }} {{ lang.t('month_status_payments') }}
+                </small>
+              </td>
+              <td class="text-end fw-bold" [class.text-danger]="r.pendingAmount > 0">
+                ₹{{ r.pendingAmount | number }}
+                <small class="d-block text-primary fw-normal" *ngIf="r.creditAmount > 0">
+                  +₹{{ r.creditAmount | number }} {{ lang.t('month_status_credit') }}
+                </small>
+              </td>
+              <td style="white-space: nowrap;">
+                <ng-container *ngIf="r.paymentDates.length; else noPayment">
+                  <div *ngFor="let d of r.paymentDates">{{ d | date: 'dd-MMM-yyyy' }}</div>
+                </ng-container>
+                <ng-template #noPayment><span class="text-muted">—</span></ng-template>
+              </td>
+              <td class="text-center">
+                <span class="status-badge text-uppercase"
                   [ngClass]="{
-                    'bg-info text-dark': p.paymentMode === 'UPI',
-                    'bg-warning text-dark': p.paymentMode === 'Cash',
-                    'bg-primary': p.paymentMode === 'Bank'
+                    'status-paid': r.status === 'Paid',
+                    'status-partial': r.status === 'Partial',
+                    'status-pending': r.status === 'Pending'
                   }">
-                  {{ p.paymentMode }}
+                  {{ r.status === 'Paid' ? lang.t('status_paid') :
+                     r.status === 'Partial' ? lang.t('status_partial') :
+                     lang.t('status_pending') }}
                 </span>
               </td>
-              <td class="text-muted">{{ p.remark || '—' }}</td>
             </tr>
-            <tr *ngIf="payments.length === 0">
-              <td colspan="8" class="text-center text-muted py-4">
-                No payments recorded yet.
+            <tr *ngIf="!monthLoading && filteredMonthRows.length === 0">
+              <td colspan="9" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <h5>{{ lang.t('month_status_no_data') }}</h5>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot *ngIf="filteredMonthRows.length > 0">
+            <tr class="fw-bold">
+              <td colspan="4">{{ lang.t('lbl_total') }}</td>
+              <td class="text-end">₹{{ monthTotal('rentAmount') | number }}</td>
+              <td class="text-end text-success">₹{{ monthTotal('paidAmount') | number }}</td>
+              <td class="text-end text-danger">₹{{ monthTotal('pendingAmount') | number }}</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Payments Table -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-header-title mb-0">
+        <i class="bi bi-clock-history text-primary"></i>{{ lang.t('payment_recent') }}
+      </h5>
+      <span class="info-pill info-pill-primary">{{ displayedPayments.length }} {{ lang.t('txn_records') }}</span>
+    </div>
+
+    <!-- Backend API Filter -->
+    <div class="backend-filter-bar p-3 border-bottom bg-light" *ngIf="isFilterOpen">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label small mb-1">Renter</label>
+          <select class="form-select form-select-sm" [(ngModel)]="backendFilterRenterId">
+            <option value="">All Renters</option>
+            <option *ngFor="let renter of activeRenters" [value]="renter.renterId">
+              {{ renter.renterName }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small mb-1">From Date</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="backendFilterFromDate" [max]="backendFilterToDate || todayKey">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small mb-1">To Date</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="backendFilterToDate" [min]="backendFilterFromDate" [max]="todayKey">
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+          <button class="btn btn-primary btn-sm w-100" (click)="applyBackendFilter()">
+            <i class="bi bi-funnel"></i> Apply API Filter
+          </button>
+          <button class="btn btn-outline-secondary btn-sm" (click)="clearBackendFilter()" title="Clear Filter">
+            <i class="bi bi-x-circle"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Frontend Filter Bar -->
+    <div class="filter-bar" style="padding: 12px 16px 0;">
+      <div class="filter-bar-inner">
+        <div class="filter-search-wrap">
+          <i class="bi bi-search filter-search-icon"></i>
+          <input type="text" class="form-control filter-search-input"
+            [placeholder]="lang.t('lbl_search_placeholder')" [(ngModel)]="filterSearch" />
+        </div>
+        <div class="filter-select-wrap">
+          <i class="bi bi-funnel filter-select-icon"></i>
+          <select class="form-select filter-select" [(ngModel)]="filterMode">
+            <option value="">{{ lang.t('lbl_all') }} {{ lang.t('payment_lbl_mode') }}</option>
+            <option value="Cash">{{ lang.t('mode_cash') }}</option>
+            <option value="UPI">{{ lang.t('mode_upi') }}</option>
+            <option value="Bank">{{ lang.t('mode_bank') }}</option>
+          </select>
+        </div>
+        <button *ngIf="hasActiveFilters" class="filter-reset-btn" (click)="resetFilters()">
+          <i class="bi bi-x-circle"></i> {{ lang.t('btn_reset') }}
+        </button>
+        <span class="filter-count">
+          {{ filteredPayments.length }} / {{ payments.length }}
+        </span>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-pro align-middle mb-0">
+          <thead>
+            <tr>
+              <th>{{ lang.t('lbl_no') }}</th>
+              <th class="sortable-th" (click)="onSort('renterName')">
+                {{ lang.t('payment_col_renter') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('renterName') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('flatNo')">
+                {{ lang.t('payment_col_flat') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('flatNo') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('month')">
+                {{ lang.t('payment_col_month') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('month') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('amountPaid')">
+                {{ lang.t('payment_col_amount') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('amountPaid') }}"></i>
+              </th>
+              <th class="sortable-th" (click)="onSort('paymentDate')">
+                {{ lang.t('payment_col_date') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('paymentDate') }}"></i>
+              </th>
+              <th class="d-none d-md-table-cell">{{ lang.t('payment_col_mode') }}</th>
+              <th class="d-none d-md-table-cell">{{ lang.t('payment_col_remark') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of displayedPayments; let i = index">
+              <td class="text-muted fw-semibold">{{ i + 1 }}</td>
+              <td class="fw-semibold">{{ p.renterName }}</td>
+              <td><span class="info-pill info-pill-primary">{{ p.flatNo }}</span></td>
+              <td style="white-space: nowrap; font-size: 0.9em;">{{ getCycleForPayment(p) }}</td>
+              <td class="text-success fw-bold">₹{{ p.amountPaid | number }}</td>
+              <td>{{ p.paymentDate }}</td>
+              <td class="d-none d-md-table-cell">
+                <span class="status-badge"
+                  [ngClass]="{
+                    'status-active': p.paymentMode === 'UPI',
+                    'status-partial': p.paymentMode === 'Cash',
+                    'status-vacant': p.paymentMode === 'Bank'
+                  }">
+                  {{ p.paymentMode === 'Cash' ? lang.t('mode_cash') :
+                     p.paymentMode === 'UPI'  ? lang.t('mode_upi') :
+                     lang.t('mode_bank') }}
+                </span>
+              </td>
+              <td class="text-muted d-none d-md-table-cell">{{ p.remark || '—' }}</td>
+            </tr>
+            <tr *ngIf="displayedPayments.length === 0">
+              <td colspan="8" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <h5>{{ lang.t('payment_no_data') }}</h5>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+    <!-- Pagination Bar -->
+    <div class="pagination-bar" *ngIf="filteredPayments.length > 0">
+      <div class="pagination-info">
+        Showing <strong>{{ (currentPage - 1) * pageSize + 1 }}</strong>–<strong>{{ minVal(currentPage * pageSize, filteredPayments.length) }}</strong> of <strong>{{ filteredPayments.length }}</strong> records
+      </div>
+      <div class="pagination-controls">
+        <button class="pagination-btn nav-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+          <i class="bi bi-chevron-left"></i> Prev
+        </button>
+        <ng-container *ngFor="let p of pageNumbers">
+          <span class="pagination-ellipsis" *ngIf="p === 2 && currentPage > 4">&hellip;</span>
+          <button
+            *ngIf="p === 1 || p === totalPages || (p >= currentPage - 1 && p <= currentPage + 1)"
+            class="pagination-btn"
+            [class.active]="p === currentPage"
+            (click)="goToPage(p)">{{ p }}</button>
+          <span class="pagination-ellipsis" *ngIf="p === totalPages - 1 && currentPage < totalPages - 3">&hellip;</span>
+        </ng-container>
+        <button class="pagination-btn nav-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+          Next <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+      <div class="page-size-select">
+        Rows:
+        <select [(ngModel)]="pageSize" (ngModelChange)="changePageSize($event)">
+          <option [value]="5">5</option>
+          <option [value]="10">10</option>
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+        </select>
       </div>
     </div>
   </div>

@@ -33,7 +33,7 @@ export class RenterService {
   }
 
   getRenterById(id: number): Observable<Renter> {
-    return this.http.get<Renter>(`${this.apiUrl}/${id}`,{headers:this.headers});
+    return this.http.get<Renter>(`${this.apiUrl}/getrenter/${id}`,{headers:this.headers});
   }
 
   updateRenter(id: number, renter: Renter): Observable<Renter> {

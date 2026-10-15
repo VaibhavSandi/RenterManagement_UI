@@ -14,7 +14,7 @@
             <i class="bi bi-currency-rupee fs-3"></i>
           </div>
           <div class="ms-3">
-            <h3 class="fw-bold mb-0">₹{{ totalPendingAmount | number }}</h3>
+            <h3 class="fw-bold mb-0">{{ inr(totalPendingAmount) }}</h3>
             <small class="text-muted">{{ lang.t('pending_total_amount') }}</small>
           </div>
         </div>
@@ -29,6 +29,19 @@
           <div class="ms-3">
             <h3 class="fw-bold mb-0">{{ totalDefaulters }}</h3>
             <small class="text-muted">{{ lang.t('pending_defaulters') }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-4">
+      <div class="card border-0 shadow-sm summary-card summary-blue">
+        <div class="card-body d-flex align-items-center">
+          <div class="summary-icon bg-primary bg-opacity-10 text-primary">
+            <i class="bi bi-calendar-x fs-3"></i>
+          </div>
+          <div class="ms-3">
+            <h3 class="fw-bold mb-0">{{ totalPendingMonths }}</h3>
+            <small class="text-muted">{{ lang.t('pending_total_periods') }}</small>
           </div>
         </div>
       </div>
@@ -56,101 +69,83 @@
             [(ngModel)]="filterSearch"
           />
         </div>
-        <div class="filter-select-wrap">
-          <i class="bi bi-funnel filter-select-icon"></i>
-          <select id="pending-status-filter" class="form-select filter-select" [(ngModel)]="filterStatus">
-            <option value="">{{ lang.t('pending_filter_all') }}</option>
-            <option value="Pending">{{ lang.t('status_pending') }}</option>
-            <option value="Partial">{{ lang.t('status_partial') }}</option>
-          </select>
-        </div>
         <span class="filter-count">
           {{ filteredRents.length }} / {{ pendingRents.length }} {{ lang.t('lbl_total') }}
         </span>
+      </div>
+      <!-- Legend -->
+      <div class="month-legend">
+        <span><span class="legend-swatch month-unpaid"></span>{{ lang.t('pending_legend_unpaid') }}</span>
+        <span><span class="legend-swatch month-partial"></span>{{ lang.t('pending_legend_partial') }}</span>
       </div>
     </div>
 
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0" *ngIf="displayedRents.length > 0">
+        <table class="table table-hover align-middle mb-0 report-table" *ngIf="displayedRents.length > 0">
           <thead class="table-light">
             <tr>
-              <th class="ps-3">{{ lang.t('lbl_no') }}</th>
+              <th class="ps-3 col-no">{{ lang.t('lbl_no') }}</th>
               <th class="sortable-th" (click)="onSort('renterName')">
                 {{ lang.t('pending_col_renter') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('renterName') }}"></i>
-              </th>
-              <th class="sortable-th" (click)="onSort('flatNo')">
-                {{ lang.t('pending_col_flat') }}
-                <i class="bi ms-1 sort-icon {{ sortIconClass('flatNo') }}"></i>
-              </th>
-              <th class="sortable-th" (click)="onSort('month')">
-                {{ lang.t('pending_col_month') }}
-                <i class="bi ms-1 sort-icon {{ sortIconClass('month') }}"></i>
               </th>
               <th class="text-end sortable-th d-none d-md-table-cell" (click)="onSort('monthlyRent')">
                 {{ lang.t('pending_col_monthly_rent') }}
                 <i class="bi ms-1 sort-icon {{ sortIconClass('monthlyRent') }}"></i>
               </th>
-              <th class="text-end sortable-th" (click)="onSort('paidAmount')">
-                {{ lang.t('pending_col_paid') }}
-                <i class="bi ms-1 sort-icon {{ sortIconClass('paidAmount') }}"></i>
+              <th>{{ lang.t('pending_col_pending_months') }}</th>
+              <th class="text-center sortable-th" (click)="onSort('pendingMonthCount')">
+                {{ lang.t('pending_col_pending_count') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('pendingMonthCount') }}"></i>
               </th>
-              <th class="text-end sortable-th" (click)="onSort('pendingAmount')">
-                {{ lang.t('pending_col_pending') }}
-                <i class="bi ms-1 sort-icon {{ sortIconClass('pendingAmount') }}"></i>
+              <th class="text-end sortable-th" (click)="onSort('totalPending')">
+                {{ lang.t('pending_col_total_pending') }}
+                <i class="bi ms-1 sort-icon {{ sortIconClass('totalPending') }}"></i>
               </th>
-              <th class="sortable-th d-none d-md-table-cell" (click)="onSort('dueDate')">
-                {{ lang.t('pending_col_due') }}
-                <i class="bi ms-1 sort-icon {{ sortIconClass('dueDate') }}"></i>
-              </th>
-              <th class="text-center sortable-th" (click)="onSort('status')">
-                {{ lang.t('pending_col_status') }}
-                <i class="bi ms-1 sort-icon {{ sortIconClass('status') }}"></i>
-              </th>
-              <th class="text-center">Actions</th>
+              <th class="text-center"></th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let item of displayedRents; let i = index">
-              <td class="ps-3 fw-semibold text-muted">{{ i + 1 }}</td>
-              <td>
-                <i class="bi bi-person-fill text-primary me-1"></i>
-                <strong>{{ item.renterName }}</strong>
+              <td class="ps-3 text-muted col-no">{{ i + 1 }}</td>
+
+              <!-- Renter: name, then flat and mobile on one line -->
+              <td class="renter-cell">
+                <div class="renter-name">{{ item.renterName }}</div>
+                <div class="renter-meta">
+                  <span *ngIf="item.flatNo"><i class="bi bi-house-door me-1"></i>{{ item.flatNo }}</span>
+                  <span *ngIf="item.mobileNumber"><i class="bi bi-telephone me-1"></i>{{ item.mobileNumber }}</span>
+                </div>
+                <div class="renter-meta d-md-none">{{ lang.t('pending_col_monthly_rent') }}: {{ inr(item.monthlyRent) }}</div>
               </td>
-              <td>
-                <span class="badge bg-light text-dark">{{ item.flatNo }}</span>
+
+              <td class="text-end d-none d-md-table-cell amount">{{ inr(item.monthlyRent) }}</td>
+
+              <!-- Pending months grouped by year: "2026  Aug Sep Oct" -->
+              <td class="months-cell">
+                <div class="year-row" *ngFor="let g of item.yearGroups">
+                  <span class="year-label">{{ g.year }}</span>
+                  <span class="month-chips">
+                    <span *ngFor="let m of g.months"
+                      class="month-chip"
+                      [ngClass]="m.status === 'Partial' ? 'month-partial' : 'month-unpaid'"
+                      [title]="monthTitle(m)">
+                      {{ shortMonth(m) }}<small *ngIf="m.status === 'Partial'" class="month-balance">{{ inr(m.pendingAmount) }}</small>
+                    </span>
+                  </span>
+                </div>
               </td>
-              <td>
-                <i class="bi bi-calendar3 text-muted me-1"></i>
-                {{ item.month }}
-              </td>
-              <td class="text-end d-none d-md-table-cell">{{ item.monthlyRent | number }}</td>
-              <td class="text-end">
-                <span [ngClass]="item.paidAmount > 0 ? 'text-success fw-semibold' : 'text-muted'">
-                  {{ item.paidAmount | number }}
-                </span>
-              </td>
-              <td class="text-end fw-bold text-danger">{{ item.pendingAmount | number }}</td>
-              <td class="d-none d-md-table-cell">{{ item.dueDate | date: 'dd MMM yyyy' }}</td>
+
               <td class="text-center">
-                <span class="badge rounded-pill"
-                  [ngClass]="{
-                    'bg-danger': item.status === 'Pending',
-                    'bg-warning text-dark': item.status === 'Partial',
-                    'bg-success': item.status === 'Paid'
-                  }">
-                  <i class="bi me-1"
-                    [ngClass]="{
-                      'bi-x-circle': item.status === 'Pending',
-                      'bi-exclamation-circle': item.status === 'Partial',
-                      'bi-check-circle': item.status === 'Paid'
-                    }"></i>
-                  {{ item.status === 'Pending' ? lang.t('status_pending') :
-                     item.status === 'Partial' ? lang.t('status_partial') :
-                     lang.t('status_paid') }}
-                </span>
+                <div class="count-value">{{ item.pendingMonthCount }}</div>
+                <div class="count-unit">{{ item.pendingMonthCount === 1 ? lang.t('pending_month_one') : lang.t('pending_month_many') }}</div>
               </td>
+
+              <td class="text-end">
+                <span class="total-pending">{{ inr(item.totalPending) }}</span>
+              </td>
+
               <td class="text-center">
                 <button class="btn btn-sm btn-outline-success rounded-pill" (click)="sendWhatsAppReminder(item)" title="Send WhatsApp Reminder">
                   <i class="bi bi-whatsapp"></i>
@@ -160,12 +155,11 @@
           </tbody>
           <tfoot class="table-light">
             <tr class="fw-bold">
-              <td class="ps-3" colspan="4">{{ lang.t('lbl_total') }}</td>
-              <td class="text-end d-none d-md-table-cell">—</td>
-              <td class="text-end text-success">₹{{ filteredTotalPaid | number }}</td>
-              <td class="text-end text-danger">₹{{ filteredTotalPending | number }}</td>
+              <td class="ps-3" colspan="2">{{ lang.t('lbl_total') }}</td>
               <td class="d-none d-md-table-cell"></td>
               <td></td>
+              <td class="text-center">{{ filteredTotalMonths }}</td>
+              <td class="text-end"><span class="total-pending">{{ inr(filteredTotalPending) }}</span></td>
               <td></td>
             </tr>
           </tfoot>

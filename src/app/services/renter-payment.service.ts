@@ -93,4 +93,11 @@ export class RenterPaymentService {
       params
     });
   }
+
+  // One renter's month-wise pending rent, up to the latest due rent month
+  getRenterPendingDetails(renterId: number): Observable<RenterPendingSummary> {
+    return this.http.get<RenterPendingSummary>(`${environment.apiUrl}/api/pending-rents/renter/${renterId}`, {
+      headers: this.headers
+    });
+  }
 }

@@ -10,8 +10,10 @@ import { RenterPaymentService } from '../../services/renter-payment.service';
 import { RentPayment } from '../../models/renterPayment.model';
 import { Renter } from '../../models/renter.model';
 import { RenterService } from '../../services/renter.service';
-import { RentMonthStatus } from '../../models/rentMonthStatus.model';
-import { RentMonthOption, buildRentMonthOptions, parseRentMonthKey, rentMonthKey, rentMonthLabel } from '../../utils/rent-month.utils';
+import { RentMonthStatus, RenterPendingSummary } from '../../models/rentMonthStatus.model';
+import {
+  RentMonthOption, buildRentMonthOptions, formatInr, parseRentMonthKey, rentMonthKey, rentMonthLabel, shortRentMonthLabel
+} from '../../utils/rent-month.utils';
 
 @Component({
   selector: 'app-rent-payment',
@@ -31,6 +33,13 @@ export class RentPaymentComponent implements OnInit, OnDestroy {
   // Filter state
   filterSearch = '';
   filterMode = '';
+
+  // Renter filter: shows every payment of one renter plus their rent summary
+  filterRenterId: number | '' = '';
+  renterPending: RenterPendingSummary | null = null;
+  renterPendingLoading = false;
+  renterPendingError = false;
+  private renterPendingSub?: Subscription;
 
   // Backend API Filter state
   backendFilterRenterId: number | '' = '';
@@ -203,6 +212,7 @@ export class RentPaymentComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.langSub?.unsubscribe();
+    this.renterPendingSub?.unsubscribe();
   }
 
   loadPayments(): void {
@@ -388,17 +398,97 @@ const payload: RentPayment = {
   resetFilters(): void {
     this.filterSearch = '';
     this.filterMode = '';
-    this.currentPage = 1;
-    this.cdr.markForCheck();
+    this.clearRenterFilter();
   }
 
   get hasActiveFilters(): boolean {
-    return this.filterSearch.trim().length > 0 || this.filterMode.length > 0;
+    return this.filterSearch.trim().length > 0 || this.filterMode.length > 0 || this.filterRenterId !== '';
+  }
+
+  // ── Renter filter ──────────────────────────────────────────────
+  /** All renters by name, current renters first (left renters keep their history). */
+  get renterFilterOptions(): Renter[] {
+    return [...this.allRenters].sort((a, b) => {
+      const aActive = a.status === 'Active' ? 0 : 1;
+      const bActive = b.status === 'Active' ? 0 : 1;
+      return aActive - bActive || (a.renterName || '').localeCompare(b.renterName || '');
+    });
+  }
+
+  get selectedFilterRenter(): Renter | undefined {
+    return this.filterRenterId === ''
+      ? undefined
+      : this.allRenters.find(r => r.renterId === +this.filterRenterId);
+  }
+
+  onRenterFilterChange(): void {
+    this.currentPage = 1;
+    this.renterPending = null;
+    this.renterPendingError = false;
+    this.renterPendingSub?.unsubscribe();
+
+    if (this.filterRenterId === '') {
+      this.renterPendingLoading = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.renterPendingLoading = true;
+    this.cdr.markForCheck();
+    this.renterPendingSub = this.renterservice.getRenterPendingDetails(+this.filterRenterId).subscribe({
+      next: (summary) => {
+        this.renterPending = summary;
+        this.renterPendingLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        console.error(error);
+        this.renterPendingError = true;
+        this.renterPendingLoading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  clearRenterFilter(): void {
+    this.filterRenterId = '';
+    this.onRenterFilterChange();
+  }
+
+  /** Every loaded payment of the selected renter, ignoring the search and mode filters. */
+  get selectedRenterPayments(): RentPayment[] {
+    if (this.filterRenterId === '') return [];
+    const id = +this.filterRenterId;
+    return this.payments.filter(p => p.renterId === id);
+  }
+
+  get selectedRenterTotalPaid(): number {
+    return this.selectedRenterPayments.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+  }
+
+  get selectedRenterLastPayment(): string | undefined {
+    // payments are sorted newest first
+    return this.selectedRenterPayments.find(p => !!p.paymentDate)?.paymentDate;
+  }
+
+  get selectedRenterPendingMonths(): string {
+    return (this.renterPending?.pendingMonths || [])
+      .map(m => shortRentMonthLabel(m.rentMonth, m.rentYear))
+      .join(', ');
+  }
+
+  inr(amount: number | null | undefined): string {
+    return formatInr(amount);
   }
 
   // ── Computed list (pre-pagination) ─────────────────────────────
   get filteredPayments(): RentPayment[] {
     let result = this.payments;
+
+    if (this.filterRenterId !== '') {
+      const id = +this.filterRenterId;
+      result = result.filter(p => p.renterId === id);
+    }
 
     if (this.filterSearch.trim()) {
       const q = this.filterSearch.trim().toLowerCase();

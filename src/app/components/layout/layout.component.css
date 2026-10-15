@@ -59,24 +59,35 @@
   display: flex;
   align-items: center;
   padding: 0.65rem 1.25rem;
-  color: #94a3b8;
-  font-size: 0.875rem;
+  color: #cbd5e1;
+  font-size: 0.9rem;
   font-weight: 500;
   border-left: 3px solid transparent;
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
   text-decoration: none;
   margin: 1px 0;
 }
 
 .sidebar-nav .nav-link:hover {
-  color: #e2e8f0;
-  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
 }
 
+.sidebar-nav .nav-link:focus-visible {
+  outline: 2px solid rgba(147, 197, 253, 0.8);
+  outline-offset: -2px;
+}
+
+/* Active page: solid tint + bar + bolder label, so it is obvious at a glance */
 .sidebar-nav .nav-link.active {
   color: #fff;
-  background: linear-gradient(90deg, rgba(99, 102, 241, 0.15) 0%, transparent 100%);
+  font-weight: 600;
+  background: rgba(99, 102, 241, 0.22);
   border-left-color: var(--primary);
+}
+
+.sidebar-nav .nav-link.active .nav-icon {
+  color: #a5b4fc;
 }
 
 .sidebar-nav .nav-icon {

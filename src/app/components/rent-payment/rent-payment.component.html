@@ -254,6 +254,16 @@
     <!-- Frontend Filter Bar -->
     <div class="filter-bar" style="padding: 12px 16px 0;">
       <div class="filter-bar-inner">
+        <div class="filter-select-wrap renter-filter-wrap">
+          <i class="bi bi-person filter-select-icon"></i>
+          <select id="payment-renter-filter" class="form-select filter-select" [(ngModel)]="filterRenterId"
+            (ngModelChange)="onRenterFilterChange()" [attr.aria-label]="lang.t('payment_filter_renter')">
+            <option value="">{{ lang.t('payment_filter_all_renters') }}</option>
+            <option *ngFor="let r of renterFilterOptions" [value]="r.renterId">
+              {{ r.renterName }}{{ r.flatNo ? ' (' + r.flatNo + ')' : '' }}{{ r.status !== 'Active' ? ' — ' + lang.t('payment_renter_left') : '' }}
+            </option>
+          </select>
+        </div>
         <div class="filter-search-wrap">
           <i class="bi bi-search filter-search-icon"></i>
           <input type="text" class="form-control filter-search-input"
@@ -275,6 +285,69 @@
           {{ filteredPayments.length }} / {{ payments.length }}
         </span>
       </div>
+    </div>
+
+    <!-- Selected renter: rent summary -->
+    <div class="renter-summary" *ngIf="selectedFilterRenter as r">
+      <div class="renter-summary-head">
+        <div>
+          <div class="renter-summary-name">
+            <i class="bi bi-person-circle me-1"></i>{{ r.renterName }}
+            <span class="status-badge ms-1" [ngClass]="r.status === 'Active' ? 'status-active' : 'status-vacant'">{{ r.status }}</span>
+          </div>
+          <div class="renter-summary-meta">
+            <span *ngIf="r.flatNo"><i class="bi bi-house-door me-1"></i>{{ r.flatNo }}</span>
+            <span *ngIf="r.mobileNumber"><i class="bi bi-telephone me-1"></i>{{ r.mobileNumber }}</span>
+            <span *ngIf="r.joiningDate"><i class="bi bi-calendar-event me-1"></i>{{ lang.t('payment_joined') }} {{ r.joiningDate | date: 'dd MMM yyyy' }}</span>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary" (click)="clearRenterFilter()">
+          <i class="bi bi-x-lg me-1"></i>{{ lang.t('payment_show_all_renters') }}
+        </button>
+      </div>
+
+      <div class="renter-summary-stats">
+        <div class="rs-stat">
+          <span class="rs-label">{{ lang.t('dashboard_col_monthly_rent') }}</span>
+          <span class="rs-value">{{ inr(r.monthlyRent) }}</span>
+        </div>
+        <div class="rs-stat">
+          <span class="rs-label">{{ lang.t('payment_total_paid') }}<ng-container *ngIf="isFilterApplied"> *</ng-container></span>
+          <span class="rs-value text-success">{{ inr(selectedRenterTotalPaid) }}</span>
+        </div>
+        <div class="rs-stat">
+          <span class="rs-label">{{ lang.t('payment_payment_count') }}</span>
+          <span class="rs-value">{{ selectedRenterPayments.length }}</span>
+        </div>
+        <div class="rs-stat">
+          <span class="rs-label">{{ lang.t('payment_last_payment') }}</span>
+          <span class="rs-value">{{ selectedRenterLastPayment ? (selectedRenterLastPayment | date: 'dd MMM yyyy') : '—' }}</span>
+        </div>
+        <div class="rs-stat">
+          <span class="rs-label">{{ lang.t('pending_col_total_pending') }}</span>
+          <span class="rs-value" *ngIf="renterPendingLoading"><span class="spinner-border spinner-border-sm text-secondary"></span></span>
+          <span class="rs-value text-muted" *ngIf="renterPendingError">—</span>
+          <span class="rs-value" *ngIf="renterPending && !renterPendingLoading"
+            [ngClass]="renterPending.totalPending > 0 ? 'text-danger' : 'text-success'">
+            {{ inr(renterPending.totalPending) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="renter-summary-pending" *ngIf="renterPending && !renterPendingLoading">
+        <ng-container *ngIf="renterPending.pendingMonths.length > 0">
+          <i class="bi bi-exclamation-circle text-danger me-1"></i>
+          <strong>{{ renterPending.pendingMonths.length }} {{ renterPending.pendingMonths.length === 1 ? lang.t('pending_month_one') : lang.t('pending_month_many') }} {{ lang.t('payment_unpaid') }}:</strong>
+          {{ selectedRenterPendingMonths }}
+        </ng-container>
+        <ng-container *ngIf="renterPending.pendingMonths.length === 0">
+          <i class="bi bi-check-circle text-success me-1"></i>{{ lang.t('payment_all_paid') }}
+        </ng-container>
+      </div>
+      <div class="renter-summary-pending text-muted" *ngIf="renterPendingError">
+        <i class="bi bi-exclamation-triangle me-1"></i>{{ lang.t('payment_pending_err') }}
+      </div>
+      <div class="renter-summary-note" *ngIf="isFilterApplied">* {{ lang.t('payment_in_date_range') }}</div>
     </div>
 
     <div class="card-body p-0">

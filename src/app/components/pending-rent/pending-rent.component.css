@@ -16,6 +16,169 @@
   border-left-color: #ffc107 !important;
 }
 
+.summary-blue {
+  border-left-color: #0d6efd !important;
+}
+
+/* ── Report table ─────────────────────────────────────────────── */
+.report-table tbody td {
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+}
+
+.report-table tbody tr + tr td {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.col-no {
+  width: 48px;
+}
+
+.renter-name {
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+
+.renter-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.9rem;
+  margin-top: 2px;
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.amount {
+  white-space: nowrap;
+}
+
+/* Pending months, one line per year */
+.months-cell {
+  min-width: 220px;
+}
+
+.year-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.year-row + .year-row {
+  margin-top: 6px;
+}
+
+.year-label {
+  flex-shrink: 0;
+  width: 2.6rem;
+  padding-top: 2px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #6c757d;
+}
+
+.month-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.month-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: default;
+}
+
+.month-unpaid {
+  background-color: rgba(220, 53, 69, 0.1);
+  border-color: rgba(220, 53, 69, 0.3);
+  color: #b02a37;
+}
+
+.month-partial {
+  background-color: rgba(255, 193, 7, 0.15);
+  border-color: rgba(255, 193, 7, 0.5);
+  color: #997404;
+}
+
+:host-context(.dark-theme) .month-unpaid {
+  color: #f1aeb5;
+}
+
+:host-context(.dark-theme) .month-partial {
+  color: #ffda6a;
+}
+
+.month-balance {
+  font-weight: 500;
+  font-size: 0.72rem;
+}
+
+/* Legend */
+.month-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.6rem 0 0.75rem;
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  vertical-align: -1px;
+}
+
+/* Count and total */
+.count-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.count-unit {
+  font-size: 0.72rem;
+  color: #6c757d;
+}
+
+.total-pending {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background-color: rgba(220, 53, 69, 0.08);
+  color: #dc3545;
+  font-size: 1.02rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+:host-context(.dark-theme) .report-table tbody tr + tr td {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+:host-context(.dark-theme) .total-pending {
+  background-color: rgba(220, 53, 69, 0.18);
+  color: #f1aeb5;
+}
+
+:host-context(.dark-theme) .renter-meta,
+:host-context(.dark-theme) .year-label,
+:host-context(.dark-theme) .count-unit,
+:host-context(.dark-theme) .month-legend {
+  color: #adb5bd;
+}
+
 .summary-icon {
   width: 56px;
   height: 56px;

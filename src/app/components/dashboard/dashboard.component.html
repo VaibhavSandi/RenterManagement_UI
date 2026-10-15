@@ -1,224 +1,341 @@
 <div class="dashboard-container">
-  <!-- Page Title -->
-  <div class="d-flex align-items-center justify-content-between mb-4">
-    <h2 class="page-title mb-0">
-      <i class="bi bi-speedometer2 me-2"></i>{{ lang.t('dashboard_title') }}
-    </h2>
-    <span class="text-muted small">{{ lang.t('lbl_welcome_back') }}</span>
-  </div>
-
-  <!-- Stat Cards -->
-  <div class="row g-3 mb-4">
-    <!-- Total Flats -->
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="stat-card" style="background: #3b82f6;">
-        <div class="stat-icon"><i class="bi bi-building"></i></div>
-        <div class="stat-value">{{ stats.totalFlats }}</div>
-        <div class="stat-label">{{ lang.t('dashboard_total_flats') }}</div>
-      </div>
+  <!-- Page Header + Period Filter -->
+  <div class="dash-header">
+    <div>
+      <h2 class="page-title mb-1">
+        <i class="bi bi-speedometer2 me-2"></i>{{ lang.t('dashboard_title') }}
+      </h2>
+      <p class="dash-subtitle mb-0" *ngIf="stats">
+        {{ lang.t('dashboard_showing_rent_for') }} <strong>{{ stats.rentPeriod }}</strong>
+        <span *ngIf="isLatestPeriod" class="period-tag">{{ lang.t('dashboard_latest_due') }}</span>
+      </p>
     </div>
-
-    <!-- Occupied Flats -->
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="stat-card" style="background: #22c55e;">
-        <div class="stat-icon"><i class="bi bi-house-check"></i></div>
-        <div class="stat-value">{{ stats.occupiedFlats }}</div>
-        <div class="stat-label">{{ lang.t('dashboard_occupied_flats') }}</div>
-      </div>
-    </div>
-
-    <!-- Vacant Flats -->
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="stat-card" style="background: #f59e0b;">
-        <div class="stat-icon"><i class="bi bi-house"></i></div>
-        <div class="stat-value">{{ stats.vacantFlats }}</div>
-        <div class="stat-label">{{ lang.t('dashboard_vacant_flats') }}</div>
-      </div>
-    </div>
-
-    <!-- Current Month Rent -->
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="stat-card" style="background: #8b5cf6;">
-        <div class="stat-icon"><i class="bi bi-currency-rupee"></i></div>
-        <div class="stat-value">{{ formatCurrency(stats.currentMonthRent) }}</div>
-        <div class="stat-label">{{ lang.t('dashboard_month_rent') }}</div>
-      </div>
-    </div>
-
-    <!-- Collected Amount -->
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="stat-card" style="background: #10b981;">
-        <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
-        <div class="stat-value">{{ formatCurrency(stats.collectedAmount) }}</div>
-        <div class="stat-label">{{ lang.t('dashboard_collected') }}</div>
-      </div>
-    </div>
-
-    <!-- Pending Amount -->
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="stat-card" style="background: #ef4444;">
-        <div class="stat-icon"><i class="bi bi-exclamation-circle"></i></div>
-        <div class="stat-value">{{ formatCurrency(stats.pendingAmount) }}</div>
-        <div class="stat-label">{{ lang.t('dashboard_pending_amount') }}</div>
-      </div>
-    </div>
-
-    <!-- Active Renters -->
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="stat-card" style="background: #06b6d4;">
-        <div class="stat-icon"><i class="bi bi-people"></i></div>
-        <div class="stat-value">{{ stats.totalActiveRenters }}</div>
-        <div class="stat-label">{{ lang.t('dashboard_active_renters') }}</div>
-      </div>
-    </div>
-    <!-- Total Expenses -->
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="stat-card" style="background: #eab308;">
-        <div class="stat-icon"><i class="bi bi-wallet2"></i></div>
-        <div class="stat-value">{{ formatCurrency(stats.totalExpenses) }}</div>
-        <div class="stat-label">Total Expenses</div>
-      </div>
-    </div>
-
-    <!-- Net Income -->
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="stat-card" style="background: #14b8a6;">
-        <div class="stat-icon"><i class="bi bi-piggy-bank"></i></div>
-        <div class="stat-value">{{ formatCurrency(stats.collectedAmount - stats.totalExpenses) }}</div>
-        <div class="stat-label">Net Income</div>
-      </div>
+    <div class="period-filter" *ngIf="periodOptions.length > 0">
+      <label for="dash-period" class="form-label mb-1">{{ lang.t('dashboard_rent_month') }}</label>
+      <select id="dash-period" class="form-select form-select-sm" [(ngModel)]="selectedPeriodKey"
+        (ngModelChange)="onPeriodChange()" [disabled]="loading">
+        <option *ngFor="let o of periodOptions" [value]="o.key">{{ o.label }}</option>
+      </select>
     </div>
   </div>
 
-  <!-- Tables Row -->
-  <div class="row g-4">
-    <!-- Recent Payments -->
-    <div class="col-12 col-xl-7">
-      <div class="card table-card">
-        <div class="card-header bg-white d-flex align-items-center justify-content-between">
-          <h5 class="mb-0">
-            <i class="bi bi-clock-history me-2 text-primary"></i>{{ lang.t('dashboard_recent_payments') }}
-          </h5>
-          <a routerLink="/payments" class="btn btn-sm btn-outline-primary">{{ lang.t('btn_view_all') }}</a>
+  <!-- Error State -->
+  <div class="alert alert-danger d-flex align-items-center justify-content-between flex-wrap gap-2" *ngIf="errorMessage" role="alert">
+    <div>
+      <i class="bi bi-exclamation-octagon me-2"></i>
+      <strong>{{ lang.t('dashboard_err_title') }}</strong> {{ errorMessage }}
+    </div>
+    <button class="btn btn-sm btn-danger" (click)="loadDashboardData()" [disabled]="loading">
+      <i class="bi bi-arrow-clockwise me-1"></i>{{ lang.t('btn_retry') }}
+    </button>
+  </div>
+
+  <!-- Loading skeleton (first load only; later loads keep the figures and dim them) -->
+  <ng-container *ngIf="loading && !stats">
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-4 col-xl" *ngFor="let s of [1,2,3,4,5]">
+        <div class="kpi-card skeleton-card">
+          <div class="skeleton skeleton-line w-50"></div>
+          <div class="skeleton skeleton-value"></div>
+          <div class="skeleton skeleton-line w-75"></div>
         </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover mb-0">
-              <thead>
-                <tr>
-                  <th>{{ lang.t('payment_col_renter') }}</th>
-                  <th>{{ lang.t('payment_col_flat') }}</th>
-                  <th>{{ lang.t('payment_col_month') }}</th>
-                  <th>{{ lang.t('payment_col_amount') }}</th>
-                  <th class="d-none d-md-table-cell">{{ lang.t('payment_col_mode') }}</th>
-                  <th>{{ lang.t('payment_col_date') }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let payment of recentPayments">
-                  <td class="fw-medium">{{ payment.renterName }}</td>
-                  <td>
-                    <span class="badge bg-light text-dark border">{{ payment.flatNo }}</span>
-                  </td>
-                  <td>{{ payment.month }}</td>
-                  <td class="fw-semibold text-success">{{ formatCurrency(payment.amountPaid) }}</td>
-                  <td class="d-none d-md-table-cell">
-                    <span class="badge"
-                      [ngClass]="{
-                        'bg-info-subtle text-info': payment.paymentMode === 'UPI',
-                        'bg-primary-subtle text-primary': payment.paymentMode === 'Bank',
-                        'bg-warning-subtle text-warning': payment.paymentMode === 'Cash'
-                      }">
-                      {{ payment.paymentMode === 'Cash' ? lang.t('mode_cash') :
-                         payment.paymentMode === 'UPI'  ? lang.t('mode_upi') :
-                         lang.t('mode_bank') }}
-                    </span>
-                  </td>
-                  <td class="text-muted">{{ payment.paymentDate }}</td>
-                </tr>
-                <tr *ngIf="recentPayments.length === 0">
-                  <td colspan="6" class="text-center text-muted py-4">{{ lang.t('dashboard_no_payments') }}</td>
-                </tr>
-              </tbody>
-            </table>
+      </div>
+    </div>
+    <div class="card table-card mb-4">
+      <div class="card-body">
+        <div class="skeleton skeleton-line w-25 mb-3"></div>
+        <div class="skeleton skeleton-row" *ngFor="let s of [1,2,3,4]"></div>
+      </div>
+    </div>
+  </ng-container>
+
+  <div *ngIf="stats" [class.is-refreshing]="loading">
+    <!-- ── KPI Cards ───────────────────────────────────────────── -->
+    <div class="row g-3 mb-3">
+      <!-- Active Renters -->
+      <div class="col-6 col-md-4 col-xl">
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <span class="kpi-title">{{ lang.t('dashboard_active_renters') }}</span>
+            <span class="kpi-icon icon-blue"><i class="bi bi-people"></i></span>
           </div>
+          <div class="kpi-value">{{ stats.activeRenters }}</div>
+          <div class="kpi-note">{{ stats.occupiedFlats }} / {{ stats.totalFlats }} {{ lang.t('dashboard_flats_occupied') }}</div>
+        </div>
+      </div>
+
+      <!-- Expected Rent -->
+      <div class="col-6 col-md-4 col-xl">
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <span class="kpi-title">{{ lang.t('dashboard_expected_rent') }}</span>
+            <span class="kpi-icon icon-slate"><i class="bi bi-calendar-check"></i></span>
+          </div>
+          <div class="kpi-value">{{ inr(stats.expectedRent) }}</div>
+          <div class="kpi-note">{{ lang.t('dashboard_rent_for') }} {{ stats.rentPeriod }}</div>
+        </div>
+      </div>
+
+      <!-- Collected Rent -->
+      <div class="col-6 col-md-4 col-xl">
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <span class="kpi-title">{{ lang.t('dashboard_collected') }}</span>
+            <span class="kpi-icon icon-green"><i class="bi bi-check-circle"></i></span>
+          </div>
+          <div class="kpi-value text-collected">{{ inr(stats.collectedAmount) }}</div>
+          <div class="kpi-note">
+            <ng-container *ngIf="collectionPercent !== null">{{ collectionPercent }}% {{ lang.t('dashboard_of_expected') }}</ng-container>
+            <ng-container *ngIf="collectionPercent === null">{{ lang.t('dashboard_rent_for') }} {{ stats.rentPeriod }}</ng-container>
+          </div>
+          <div class="kpi-progress" *ngIf="collectionPercent !== null">
+            <div class="kpi-progress-bar" [style.width.%]="collectionPercent > 100 ? 100 : collectionPercent"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Rent (total outstanding) -->
+      <div class="col-6 col-md-6 col-xl">
+        <div class="kpi-card kpi-attention">
+          <div class="kpi-head">
+            <span class="kpi-title">{{ lang.t('dashboard_total_outstanding') }}</span>
+            <span class="kpi-icon icon-red"><i class="bi bi-exclamation-circle"></i></span>
+          </div>
+          <div class="kpi-value text-overdue">{{ inr(stats.totalOutstanding) }}</div>
+          <div class="kpi-note">
+            {{ stats.rentPeriod }}: {{ inr(stats.pendingAmount) }} · {{ lang.t('dashboard_all_months_upto') }} {{ stats.outstandingAsOfPeriod }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Overdue Renters -->
+      <div class="col-12 col-md-6 col-xl">
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <span class="kpi-title">{{ lang.t('dashboard_overdue_renters') }}</span>
+            <span class="kpi-icon icon-orange"><i class="bi bi-person-exclamation"></i></span>
+          </div>
+          <div class="kpi-value">{{ stats.overdueRenters }}</div>
+          <div class="kpi-note">{{ lang.t('dashboard_with_unpaid_rent') }}</div>
         </div>
       </div>
     </div>
 
-    <!-- Pending Rents -->
-    <div class="col-12 col-xl-5">
-      <div class="card table-card">
-        <div class="card-header bg-white d-flex align-items-center justify-content-between">
-          <h5 class="mb-0">
-            <i class="bi bi-exclamation-triangle me-2 text-danger"></i>{{ lang.t('dashboard_pending_rents') }}
-          </h5>
-          <span class="badge bg-danger rounded-pill">{{ pendingRents.length }}</span>
+    <!-- Secondary figures (property & expenses) -->
+    <div class="mini-stats mb-4">
+      <div class="mini-stat">
+        <i class="bi bi-building"></i>
+        <span class="mini-label">{{ lang.t('dashboard_total_flats') }}</span>
+        <span class="mini-value">{{ stats.totalFlats }}</span>
+      </div>
+      <div class="mini-stat">
+        <i class="bi bi-house-check"></i>
+        <span class="mini-label">{{ lang.t('dashboard_occupied_flats') }}</span>
+        <span class="mini-value">{{ stats.occupiedFlats }}</span>
+      </div>
+      <div class="mini-stat">
+        <i class="bi bi-house"></i>
+        <span class="mini-label">{{ lang.t('dashboard_vacant_flats') }}</span>
+        <span class="mini-value">{{ stats.vacantFlats }}</span>
+      </div>
+      <div class="mini-stat">
+        <i class="bi bi-wallet2"></i>
+        <span class="mini-label">{{ lang.t('dashboard_expenses') }} ({{ stats.rentPeriod }})</span>
+        <span class="mini-value">{{ inr(stats.totalExpenses) }}</span>
+      </div>
+      <div class="mini-stat">
+        <i class="bi bi-piggy-bank"></i>
+        <span class="mini-label">{{ lang.t('dashboard_net_income') }}</span>
+        <span class="mini-value" [class.text-overdue]="netIncome < 0">{{ inr(netIncome) }}</span>
+      </div>
+    </div>
+
+    <!-- ── Pending Rent ────────────────────────────────────────── -->
+    <div class="card table-card mb-4">
+      <div class="card-header bg-white">
+        <div class="section-head">
+          <div>
+            <h5 class="mb-0">
+              <i class="bi bi-exclamation-triangle me-2 text-danger"></i>{{ lang.t('dashboard_pending_rents') }}
+            </h5>
+            <small class="text-muted">{{ lang.t('dashboard_pending_hint') }} {{ stats.outstandingAsOfPeriod }}</small>
+          </div>
+          <a routerLink="/pending" class="btn btn-sm btn-outline-primary">
+            {{ lang.t('dashboard_full_report') }} <i class="bi bi-arrow-right ms-1"></i>
+          </a>
         </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover mb-0">
-              <thead>
-                <tr>
-                  <th>{{ lang.t('payment_col_renter') }}</th>
-                  <th>{{ lang.t('payment_col_flat') }}</th>
-                  <th>{{ lang.t('pending_col_pending') }}</th>
-                  <th>{{ lang.t('lbl_status') }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let rent of displayedPendingRents">
-                  <td class="fw-medium">{{ rent.renterName }}</td>
-                  <td>
-                    <span class="badge bg-light text-dark border">{{ rent.flatNo }}</span>
-                  </td>
-                  <td class="fw-semibold text-danger">{{ formatCurrency(rent.pendingAmount) }}</td>
-                  <td>
-                    <span class="badge"
-                      [ngClass]="{
-                        'bg-danger-subtle text-danger': rent.status === 'Pending',
-                        'bg-warning-subtle text-warning': rent.status === 'Partial'
-                      }">
-                      {{ rent.status === 'Pending' ? lang.t('status_pending') : lang.t('status_partial') }}
+
+        <!-- Filters -->
+        <div class="section-filters" *ngIf="pendingRows.length > 0">
+          <div class="filter-search-wrap">
+            <i class="bi bi-search filter-search-icon"></i>
+            <input type="text" class="form-control form-control-sm filter-search-input"
+              [placeholder]="lang.t('pending_filter_search')" [(ngModel)]="pendingSearch" />
+          </div>
+          <select class="form-select form-select-sm status-select" [(ngModel)]="pendingStatusFilter">
+            <option value="">{{ lang.t('pending_filter_all') }}</option>
+            <option value="overdue">{{ lang.t('dashboard_status_overdue') }}</option>
+            <option value="partial">{{ lang.t('dashboard_status_partial') }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card-body p-0">
+        <div class="table-responsive" *ngIf="filteredPendingRows.length > 0">
+          <table class="table mb-0 dash-table">
+            <thead>
+              <tr>
+                <th>{{ lang.t('pending_col_renter') }}</th>
+                <th class="text-end d-none d-md-table-cell">{{ lang.t('dashboard_col_monthly_rent') }}</th>
+                <th>{{ lang.t('pending_col_pending_months') }}</th>
+                <th class="text-end">{{ lang.t('dashboard_col_pending_amount') }}</th>
+                <th>{{ lang.t('lbl_status') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of displayedPendingRows; trackBy: trackByRenter">
+                <td>
+                  <div class="cell-primary">{{ r.renterName }}</div>
+                  <div class="cell-secondary">
+                    <span *ngIf="r.flatNo">{{ r.flatNo }}</span>
+                    <span class="d-md-none"> · {{ inr(r.monthlyRent) }}/{{ lang.t('dashboard_per_month') }}</span>
+                  </div>
+                </td>
+                <td class="text-end d-none d-md-table-cell nowrap">{{ inr(r.monthlyRent) }}</td>
+                <td class="months-cell">
+                  <div class="year-row" *ngFor="let g of r.visibleGroups">
+                    <span class="year-label">{{ g.year }}</span>
+                    <span class="month-chips">
+                      <span *ngFor="let m of g.months" class="month-chip"
+                        [ngClass]="m.status === 'Partial' ? 'chip-partial' : 'chip-unpaid'" [title]="monthTitle(m)">
+                        {{ shortMonth(m) }}
+                      </span>
                     </span>
-                  </td>
-                </tr>
-                <tr *ngIf="pendingRents.length === 0">
-                  <td colspan="4" class="text-center text-muted py-4">{{ lang.t('dashboard_no_pending') }}</td>
-                </tr>
-              </tbody>
-            </table>
+                  </div>
+                  <a *ngIf="r.hiddenMonthCount > 0" routerLink="/pending" class="more-months">
+                    +{{ r.hiddenMonthCount }} {{ lang.t('dashboard_more_months') }}
+                  </a>
+                </td>
+                <td class="text-end nowrap">
+                  <div class="amount-overdue">{{ inr(r.totalPending) }}</div>
+                  <div class="cell-secondary">{{ r.pendingMonthCount }} {{ r.pendingMonthCount === 1 ? lang.t('pending_month_one') : lang.t('pending_month_many') }}</div>
+                </td>
+                <td>
+                  <span class="status-pill" [ngClass]="r.status === 'partial' ? 'status-partial' : 'status-overdue'">
+                    <i class="bi" [ngClass]="r.status === 'partial' ? 'bi-hourglass-split' : 'bi-exclamation-circle-fill'"></i>
+                    {{ r.status === 'partial' ? lang.t('dashboard_status_partial') : lang.t('dashboard_status_overdue') }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Show all / fewer -->
+        <div class="table-more" *ngIf="hiddenPendingRowCount > 0">
+          <button class="btn btn-link btn-sm" (click)="toggleShowAllPending()">
+            <ng-container *ngIf="!showAllPending">{{ lang.t('dashboard_show_all') }} ({{ filteredPendingRows.length }})</ng-container>
+            <ng-container *ngIf="showAllPending">{{ lang.t('dashboard_show_less') }}</ng-container>
+          </button>
+        </div>
+
+        <!-- No match for filters -->
+        <div class="empty-state" *ngIf="pendingRows.length > 0 && filteredPendingRows.length === 0">
+          <i class="bi bi-search"></i>
+          <p class="mb-2">{{ lang.t('dashboard_no_match') }}</p>
+          <button class="btn btn-sm btn-outline-secondary" (click)="clearPendingFilters()">{{ lang.t('dashboard_clear_filters') }}</button>
+        </div>
+
+        <!-- Nothing pending -->
+        <div class="empty-state" *ngIf="pendingRows.length === 0">
+          <i class="bi bi-check-circle text-success"></i>
+          <p class="mb-0">{{ lang.t('dashboard_no_pending') }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Trend + Recent Payments ─────────────────────────────── -->
+    <div class="row g-4">
+      <!-- Collection trend -->
+      <div class="col-12 col-xl-5">
+        <div class="card table-card h-100">
+          <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-bar-chart me-2 text-primary"></i>{{ lang.t('dashboard_trend_title') }}</h5>
+            <small class="text-muted">{{ lang.t('dashboard_trend_hint') }}</small>
+          </div>
+          <div class="card-body">
+            <div class="chart-legend">
+              <span><span class="legend-dot dot-collected"></span>{{ lang.t('dashboard_collected') }}</span>
+              <span><span class="legend-dot dot-pending"></span>{{ lang.t('dashboard_pending_amount') }}</span>
+            </div>
+            <div class="trend-chart" role="img" [attr.aria-label]="lang.t('dashboard_trend_title')">
+              <div class="trend-col" *ngFor="let b of trendBars" [class.selected]="b.selected" [title]="trendTitle(b)" tabindex="0">
+                <div class="trend-plot">
+                  <div class="trend-stack">
+                    <div class="trend-seg seg-pending" *ngIf="b.pendingRent > 0" [style.height.%]="b.pendingHeight"></div>
+                    <div class="trend-seg seg-collected" *ngIf="b.collectedRent > 0" [style.height.%]="b.collectedHeight"></div>
+                  </div>
+                </div>
+                <div class="trend-label">{{ b.label }}</div>
+                <div class="trend-pct">{{ b.collectedPercent !== null ? b.collectedPercent + '%' : '—' }}</div>
+                <!-- Hover / focus details -->
+                <div class="trend-tip">
+                  <strong>{{ b.fullLabel }}</strong>
+                  <span>{{ lang.t('dashboard_expected_rent') }}: {{ inr(b.expectedRent) }}</span>
+                  <span>{{ lang.t('dashboard_collected') }}: {{ inr(b.collectedRent) }}</span>
+                  <span>{{ lang.t('dashboard_pending_amount') }}: {{ inr(b.pendingRent) }}</span>
+                </div>
+              </div>
+            </div>
+            <p class="chart-footnote mb-0">{{ lang.t('dashboard_trend_footnote') }}</p>
           </div>
         </div>
-        <!-- Pending Rents Pagination -->
-        <div class="pagination-bar" *ngIf="pendingRents.length > 0">
-          <div class="pagination-info">
-            Showing <strong>{{ (pendingPage - 1) * pendingPageSize + 1 }}</strong>–<strong>{{ minVal(pendingPage * pendingPageSize, pendingRents.length) }}</strong> of <strong>{{ pendingRents.length }}</strong> records
+      </div>
+
+      <!-- Recent Payments -->
+      <div class="col-12 col-xl-7">
+        <div class="card table-card h-100">
+          <div class="card-header bg-white">
+            <div class="section-head">
+              <h5 class="mb-0">
+                <i class="bi bi-clock-history me-2 text-primary"></i>{{ lang.t('dashboard_recent_payments') }}
+              </h5>
+              <a routerLink="/payments" class="btn btn-sm btn-outline-primary">{{ lang.t('btn_view_all') }}</a>
+            </div>
           </div>
-          <div class="pagination-controls">
-            <button class="pagination-btn nav-btn" (click)="goToPendingPage(pendingPage - 1)" [disabled]="pendingPage === 1">
-              <i class="bi bi-chevron-left"></i> Prev
-            </button>
-            <ng-container *ngFor="let p of pendingPageNumbers">
-              <span class="pagination-ellipsis" *ngIf="p === 2 && pendingPage > 4">&hellip;</span>
-              <button
-                *ngIf="p === 1 || p === totalPendingPages || (p >= pendingPage - 1 && p <= pendingPage + 1)"
-                class="pagination-btn"
-                [class.active]="p === pendingPage"
-                (click)="goToPendingPage(p)">{{ p }}</button>
-              <span class="pagination-ellipsis" *ngIf="p === totalPendingPages - 1 && pendingPage < totalPendingPages - 3">&hellip;</span>
-            </ng-container>
-            <button class="pagination-btn nav-btn" (click)="goToPendingPage(pendingPage + 1)" [disabled]="pendingPage === totalPendingPages">
-              Next <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
-          <div class="page-size-select">
-            Rows:
-            <select [(ngModel)]="pendingPageSize" (ngModelChange)="changePendingPageSize($event)">
-              <option [value]="5">5</option>
-              <option [value]="10">10</option>
-              <option [value]="25">25</option>
-            </select>
+          <div class="card-body p-0">
+            <div class="table-responsive" *ngIf="recentPayments.length > 0">
+              <table class="table mb-0 dash-table">
+                <thead>
+                  <tr>
+                    <th>{{ lang.t('payment_col_renter') }}</th>
+                    <th>{{ lang.t('dashboard_col_for_month') }}</th>
+                    <th class="text-end">{{ lang.t('payment_col_amount') }}</th>
+                    <th class="d-none d-md-table-cell">{{ lang.t('payment_col_mode') }}</th>
+                    <th>{{ lang.t('payment_col_date') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let p of recentPayments; trackBy: trackByPayment">
+                    <td>
+                      <div class="cell-primary">{{ p.renterName }}</div>
+                      <div class="cell-secondary" *ngIf="p.flatNo">{{ p.flatNo }}</div>
+                    </td>
+                    <td class="nowrap">{{ paymentPeriod(p) }}</td>
+                    <td class="text-end nowrap amount-collected">{{ inr(p.amountPaid) }}</td>
+                    <td class="d-none d-md-table-cell">
+                      <span class="mode-pill" *ngIf="p.paymentMode">{{ p.paymentMode }}</span>
+                      <span class="text-muted" *ngIf="!p.paymentMode">—</span>
+                    </td>
+                    <td class="nowrap text-muted">{{ p.paymentDate ? (p.paymentDate | date: 'dd MMM yyyy') : '—' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="empty-state" *ngIf="recentPayments.length === 0">
+              <i class="bi bi-receipt"></i>
+              <p class="mb-0">{{ lang.t('dashboard_no_payments') }}</p>
+            </div>
           </div>
         </div>
       </div>

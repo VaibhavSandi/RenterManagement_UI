@@ -6,9 +6,13 @@ import { LanguageService } from '../../services/language.service';
 import { SortConfig, sortArray, toggleSort, sortIcon } from '../../utils/table.utils';
 import { Subscription } from 'rxjs';
 import { RenterPaymentService } from '../../services/renter-payment.service';
-import { PendingRent } from '../../models/interfaces';
-import { PendingRenters } from '../../models/PendingRenters.model';
-import { RenterService } from '../../services/renter.service';
+import { RentMonthStatus, RenterPendingSummary } from '../../models/rentMonthStatus.model';
+import { YearGroup, formatInr, groupByRentYear, shortMonthName, shortRentMonthLabel } from '../../utils/rent-month.utils';
+
+// A report row plus its pending months grouped by year, prepared once on load
+export interface PendingReportRow extends RenterPendingSummary {
+  yearGroups: YearGroup<RentMonthStatus>[];
+}
 
 @Component({
   selector: 'app-pending-rent',
@@ -19,17 +23,17 @@ import { RenterService } from '../../services/renter.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PendingRentComponent implements OnInit, OnDestroy {
-  pendingRents: PendingRenters[] = [];
+  // One row per renter with pending rent, calculated by the backend rent ledger
+  pendingRents: PendingReportRow[] = [];
   totalPendingAmount = 0;
-  totalPaidAmount = 0;
+  totalPendingMonths = 0;
   totalDefaulters = 0;
 
   // Filter state
   filterSearch = '';
-  filterStatus = '';
 
-  // Sort state
-  sortConfig: SortConfig = { column: '', direction: '' };
+  // Sort state: biggest dues first
+  sortConfig: SortConfig = { column: 'totalPending', direction: 'desc' };
 
   // Pagination state
   currentPage = 1;
@@ -38,10 +42,8 @@ export class PendingRentComponent implements OnInit, OnDestroy {
   private langSub!: Subscription;
 
   constructor(
-
     public lang: LanguageService,
     private renterpayment: RenterPaymentService,
-    private renterService: RenterService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -71,11 +73,16 @@ export class PendingRentComponent implements OnInit, OnDestroy {
 
 
   getPendingRentest(): void {
-    this.renterpayment.getpendingRenter().subscribe({
+    // No month given: pending up to the latest due rent month, so future months are never counted
+    this.renterpayment.getPendingSummary().subscribe({
       next: (response) => {
-        this.pendingRents = response;
-        this.totalPendingAmount = this.pendingRents.reduce((sum, p) => sum + p.pendingAmount, 0);
-        this.totalPaidAmount = this.pendingRents.reduce((sum, p) => sum + p.paidAmount, 0);
+        this.pendingRents = response.map(r => ({
+          ...r,
+          pendingMonthCount: r.pendingMonthCount ?? r.pendingMonths.length,
+          yearGroups: groupByRentYear(r.pendingMonths)
+        }));
+        this.totalPendingAmount = this.pendingRents.reduce((sum, r) => sum + r.totalPending, 0);
+        this.totalPendingMonths = this.pendingRents.reduce((sum, r) => sum + r.pendingMonthCount, 0);
         this.totalDefaulters = this.pendingRents.length;
         this.currentPage = 1;
         this.cdr.markForCheck();
@@ -89,36 +96,32 @@ export class PendingRentComponent implements OnInit, OnDestroy {
 
   resetFilters(): void {
     this.filterSearch = '';
-    this.filterStatus = '';
     this.currentPage = 1;
     this.cdr.markForCheck();
   }
 
   get hasActiveFilters(): boolean {
-    return this.filterSearch.trim().length > 0 || this.filterStatus.length > 0;
+    return this.filterSearch.trim().length > 0;
   }
 
   // ── Computed list (pre-pagination) ─────────────────────────────
-  get filteredRents(): PendingRenters[] {
+  get filteredRents(): PendingReportRow[] {
     let result = this.pendingRents;
 
     if (this.filterSearch.trim()) {
       const q = this.filterSearch.trim().toLowerCase();
       result = result.filter(r =>
         r.renterName.toLowerCase().includes(q) ||
-        r.flatNo.toLowerCase().includes(q)
+        (r.flatNo || '').toLowerCase().includes(q) ||
+        (r.mobileNumber || '').includes(q)
       );
-    }
-
-    if (this.filterStatus) {
-      result = result.filter(r => r.status === this.filterStatus);
     }
 
     return sortArray(result, this.sortConfig.column, this.sortConfig.direction);
   }
 
   // ── Paginated slice ────────────────────────────────────────────
-  get displayedRents(): PendingRenters[] {
+  get displayedRents(): PendingReportRow[] {
     const start = (this.currentPage - 1) * this.pageSize;
     return this.filteredRents.slice(start, start + this.pageSize);
   }
@@ -146,35 +149,56 @@ export class PendingRentComponent implements OnInit, OnDestroy {
   }
 
   get filteredTotalPending(): number {
-    return this.filteredRents.reduce((sum, p) => sum + p.pendingAmount, 0);
+    return this.filteredRents.reduce((sum, r) => sum + r.totalPending, 0);
   }
 
-  get filteredTotalPaid(): number {
-    return this.filteredRents.reduce((sum, p) => sum + p.paidAmount, 0);
+  get filteredTotalMonths(): number {
+    return this.filteredRents.reduce((sum, r) => sum + r.pendingMonthCount, 0);
+  }
+
+  // ── Formatting ─────────────────────────────────────────────────
+  inr(amount: number | null | undefined): string {
+    return formatInr(amount);
+  }
+
+  /** e.g. "Aug 2026" */
+  monthLabel(month: RentMonthStatus): string {
+    return shortRentMonthLabel(month.rentMonth, month.rentYear);
+  }
+
+  /** e.g. "Aug" */
+  shortMonth(month: RentMonthStatus): string {
+    return shortMonthName(month.rentMonth);
+  }
+
+  monthLabels(rent: RenterPendingSummary): string {
+    return rent.pendingMonths.map(m => this.monthLabel(m)).join(', ');
+  }
+
+  /** Tooltip for one pending month, e.g. "Sep 2026: ₹3,000 pending of ₹8,000" */
+  monthTitle(month: RentMonthStatus): string {
+    return `${this.monthLabel(month)}: ${this.inr(month.pendingAmount)} pending of ${this.inr(month.rentAmount)}`;
   }
 
   // ── WhatsApp Reminder ──────────────────────────────────────────
-  sendWhatsAppReminder(rent: PendingRenters): void {
-    this.renterService.getRenterById(rent.renterId).subscribe({
-      next: (renter) => {
-        if (!renter.mobileNumber) {
-          alert('Mobile number not found for this renter.');
-          return;
-        }
+  sendWhatsAppReminder(rent: RenterPendingSummary): void {
+    let phone = (rent.mobileNumber || '').replace(/\D/g, '');
+    if (phone.length === 11 && phone.startsWith('0')) {
+      phone = phone.substring(1);
+    }
+    // Default to India country code if not provided
+    if (phone.length === 10) {
+      phone = '91' + phone;
+    }
+    if (phone.length < 11) {
+      alert('A valid mobile number was not found for this renter.');
+      return;
+    }
 
-        const rawPhone = renter.mobileNumber.replace(/\D/g, '');
-        // Default to India country code if not provided
-        const phone = rawPhone.length === 10 ? '91' + rawPhone : rawPhone;
+    const flat = rent.flatNo ? ` for Flat ${rent.flatNo}` : '';
+    const message = `Hello ${rent.renterName},\n\nThis is a gentle reminder that your rent of ${this.inr(rent.totalPending)}${flat} is pending for ${this.monthLabels(rent)}.\n\nPlease pay at your earliest convenience. Thank you!`;
 
-        const message = `Hello ${rent.renterName},\n\nThis is a gentle reminder that your rent of ₹${rent.pendingAmount} for Flat ${rent.flatNo} is currently pending.\n\nPlease pay at your earliest convenience. Thank you!`;
-        const encodedMessage = encodeURIComponent(message);
-        const waUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
-
-        window.open(waUrl, '_blank');
-      },
-      error: () => {
-        alert('Failed to retrieve renter details for WhatsApp reminder.');
-      }
-    });
+    // Opened directly from the click so the browser doesn't block it as a pop-up
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
   }
 }

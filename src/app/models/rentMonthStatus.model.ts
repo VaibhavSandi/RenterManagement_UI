@@ -34,6 +34,7 @@ export interface RenterPendingSummary {
   asOfRentMonth: number;
   asOfRentYear: number;
   pendingMonths: RentMonthStatus[];
+  pendingMonthCount: number;
   totalPending: number;
   totalCredit: number;
 }
